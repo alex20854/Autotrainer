@@ -43,6 +43,31 @@ strict:
    illness signals, state the verification tier with every prescription,
    distinguish RCT-grade claims from practitioner consensus.
 
+## Privacy — this repo is PUBLIC
+
+Training data (HR, watts, plans, benchmarks) is deliberately public. What must
+NEVER be committed is anything revealing *where to find the athlete* or *their
+full identity*: GPS/location data, routes, street addresses, phone numbers,
+personal email addresses, full name, employer, gym name.
+
+- **Before every commit** run `python3 scripts/privacy_check.py --staged`
+  (or install the hook once per clone: `git config core.hooksPath
+  scripts/githooks` — then it runs automatically). A finding blocks the
+  commit; after human review, override deliberately with `--no-verify`.
+- **Photos:** privacy_check fails on GPS or owner/serial EXIF;
+  `scripts/privacy_check.py --strip-gps` rewrites them in place — the one
+  sanctioned mutation of `data/raw/` (privacy beats immutability).
+- **Personal strings** (name, address, employer...) live only in
+  `config/privacy.local.yaml` (gitignored; see the .example) so the check can
+  grep for them without the repo itself containing them.
+- **Never extract location** into derived records or sessions: no workout GPS
+  routes, no gym coordinates. Parsers ignore route/location fields by design —
+  keep it that way when extending them.
+- **Git identity:** commit with a noreply email. GitHub *web uploads* stamp
+  the account's real email into public history — the athlete should enable
+  GitHub Settings → Emails → "Keep my email addresses private" (and "Block
+  command line pushes that expose my email").
+
 ## Commands
 
 The `/coach` skill (`.claude/skills/coach/`) routes `setup | ingest | plan |

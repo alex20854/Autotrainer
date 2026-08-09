@@ -1,0 +1,11 @@
+# Copy to config/privacy.local.yaml (gitignored — NEVER commit the real one)
+# and list the personal strings that must never appear in this public repo.
+# privacy_check.py greps every commit for them, case-insensitively.
+never_commit:
+  - "Your Full Name"
+  - "123 Your Street"
+  - "Your Town"
+  - "your.personal@email.com"
+  - "555-555-5555"
+  - "Your Employer"
+  - "Name Of Your Gym"

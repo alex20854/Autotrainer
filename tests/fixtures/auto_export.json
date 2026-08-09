@@ -1,0 +1,24 @@
+{
+  "data": {
+    "workouts": [
+      {
+        "name": "Indoor Cycling",
+        "start": "2026-08-08 06:15:03 -0400",
+        "end": "2026-08-08 07:01:44 -0400",
+        "duration": 46.68,
+        "activeEnergyBurned": {"qty": 410, "units": "kcal"},
+        "distance": {"qty": 21.4, "units": "km"},
+        "avgHeartRate": {"qty": 132, "units": "count/min"},
+        "maxHeartRate": {"qty": 147, "units": "count/min"},
+        "heartRateData": [
+          {"date": "2026-08-08 06:15:10 -0400", "qty": 98},
+          {"date": "2026-08-08 06:20:10 -0400", "qty": 121},
+          {"date": "2026-08-08 06:30:10 -0400", "qty": 130},
+          {"date": "2026-08-08 06:40:10 -0400", "qty": 134},
+          {"date": "2026-08-08 06:50:10 -0400", "qty": 136},
+          {"date": "2026-08-08 07:00:10 -0400", "qty": 138}
+        ]
+      }
+    ]
+  }
+}

@@ -79,6 +79,11 @@ def session_for_case(case: dict) -> tuple[dict, str]:
         "ref": w["ref"],
         "confidence": "high",
     }]
+    # consolidated duplicate/complementary captures: recorded so re-ingest
+    # sees them claimed and metrics can read HR + watt series across records
+    for co in w.get("co_refs") or []:
+        sources.append({"kind": co["kind"], "ref": co["ref"],
+                        "confidence": "high", "role": co["role"]})
     if sidecar:
         sources.append({
             "kind": "photo",
@@ -111,12 +116,15 @@ def session_for_case(case: dict) -> tuple[dict, str]:
         "compliance": None,
         "computed": None,
     }
-    # hr_max lives in the derived record, not the proposal summary
-    rec_path = REPO_ROOT / w["ref"]
-    if rec_path.exists():
-        rec = json.loads(rec_path.read_text(encoding="utf-8"))
-        if rec.get("hr"):
-            fm["hr_max"] = rec["hr"].get("max")
+    # hr_max lives in the derived records, not the proposal summary; with
+    # consolidated captures, any contributing record may hold the HR data
+    for ref in [w["ref"]] + [co["ref"] for co in w.get("co_refs") or []]:
+        rec_path = REPO_ROOT / ref
+        if rec_path.exists():
+            rec = json.loads(rec_path.read_text(encoding="utf-8"))
+            if (rec.get("hr") or {}).get("max"):
+                fm["hr_max"] = rec["hr"]["max"]
+                break
 
     body = ("_Auto-merged; see sources for provenance._\n"
             if case["kind"] == "pair" else

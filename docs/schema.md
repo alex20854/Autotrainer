@@ -28,7 +28,11 @@ sources:                              # provenance — which evidence built this
   - kind: health                      # health | photo | c2 | user
     ref: data/derived/workouts/health-2026-08-08T061503-cycling.json
     confidence: high                  # high | medium | low
-  - kind: photo
+  - kind: health                      # same bout captured twice (export.xml +
+    ref: data/derived/workouts/health-2026-08-08T061505-indoor-cycling.json
+    confidence: high                  # Auto Export; Watch + iPhone): recorded
+    role: duplicate                   # with role duplicate|complement so
+  - kind: photo                       # re-ingest sees the record claimed
     ref: data/raw/photos/IMG_4231.jpeg
     extraction: data/derived/photos/IMG_4231.yaml
     confidence: high

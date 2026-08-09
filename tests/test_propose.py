@@ -11,7 +11,8 @@ MATCHING = {
 
 
 def workout(rid, wtype, start, end, duration_s):
-    return {"record_id": rid, "workout_type": wtype, "start": start, "end": end,
+    return {"record_id": rid, "source_kind": rid.split("-")[0],
+            "workout_type": wtype, "start": start, "end": end,
             "duration_s": duration_s, "kcal": 300, "distance_m": None, "hr": {"avg": 130}}
 
 
@@ -108,3 +109,45 @@ def test_non_overlapping_session_does_not_block_single_source():
                  "end": "2026-08-04T06:30:00-04:00", "modality": "rowerg"}]
     result = pm.propose([W1], [], set(), MATCHING, sessions)
     assert result["auto_merge"][0]["kind"] == "single_source"
+
+
+def test_duplicate_health_captures_collapse_to_one_session():
+    # same ride in export.xml and Auto Export: different type spellings,
+    # timestamps seconds apart — must become ONE session, richest record primary
+    thin = workout("health-a1", "HKWorkoutActivityTypeCycling",
+                   "2026-08-05T06:00:00-04:00", "2026-08-05T06:30:30-04:00", 1830)
+    rich = workout("health-a2", "Indoor Cycling",
+                   "2026-08-05T06:00:12-04:00", "2026-08-05T06:31:00-04:00", 1848)
+    rich["hr"] = {"avg": 131, "max": 146, "series": [[i * 60, 130] for i in range(30)]}
+    result = pm.propose([thin, rich], [], set(), MATCHING)
+    assert len(result["auto_merge"]) == 1 and result["ambiguous"] == []
+    w = result["auto_merge"][0]["workout"]
+    assert w["record_id"] == "health-a2"  # HR series wins primacy
+    assert w["co_refs"] == [{"kind": "health", "role": "duplicate",
+                             "ref": "data/derived/workouts/health-a1.json"}]
+
+
+def test_c2_and_health_records_merge_as_complements():
+    c2 = workout("c2-b1", "c2-rowerg",
+                 "2026-08-04T06:05:00-04:00", "2026-08-04T06:35:00-04:00", 1800)
+    c2["hr"] = None
+    health = workout("health-b2", "HKWorkoutActivityTypeRowing",
+                     "2026-08-04T06:04:30-04:00", "2026-08-04T06:36:00-04:00", 1890)
+    health["hr"] = {"avg": 128, "max": 141, "series": [[i * 60, 128] for i in range(31)]}
+    result = pm.propose([c2, health], [], set(), MATCHING)
+    assert len(result["auto_merge"]) == 1
+    w = result["auto_merge"][0]["workout"]
+    assert w["record_id"] == "c2-b1"          # machine record is primary
+    assert w["duration_s"] == 1800            # machine wins duration
+    assert w["start"] == "2026-08-04T06:04:30-04:00"  # Health anchors timing
+    assert w["hr_avg"] == 128                 # Health wins HR
+    assert w["co_refs"][0]["role"] == "complement"
+
+
+def test_back_to_back_workouts_do_not_collapse():
+    first = workout("health-c1", "HKWorkoutActivityTypeRowing",
+                    "2026-08-06T06:00:00-04:00", "2026-08-06T06:25:00-04:00", 1500)
+    second = workout("health-c2", "HKWorkoutActivityTypeCycling",
+                     "2026-08-06T06:26:00-04:00", "2026-08-06T06:50:00-04:00", 1440)
+    result = pm.propose([first, second], [], set(), MATCHING)
+    assert len(result["auto_merge"]) == 2

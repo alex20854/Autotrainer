@@ -72,7 +72,9 @@ def test_apply_merges_pair(tmp_path, monkeypatch):
         "workout": {"record_id": "health-a", "workout_type": "HKWorkoutActivityTypeCycling",
                     "start": "2026-08-05T06:00:00-04:00", "end": "2026-08-05T06:30:30-04:00",
                     "duration_s": 1830, "kcal": 310, "distance_m": 14200, "hr_avg": 130,
-                    "ref": "data/derived/workouts/health-a.json"},
+                    "ref": "data/derived/workouts/health-a.json",
+                    "co_refs": [{"kind": "health", "role": "duplicate",
+                                 "ref": "data/derived/workouts/health-dup.json"}]},
         "sidecar": "sc/p1.yaml",
         "machine": "concept2-bikeerg",
         "confidence": 1.0,
@@ -85,6 +87,9 @@ def test_apply_merges_pair(tmp_path, monkeypatch):
     assert fm["distance_m"] == 14100 and fm["kcal"] == 320
     assert fm["hr_avg"] == 130 and fm["hr_max"] == 144
     assert {s["kind"] for s in fm["sources"]} == {"health", "photo"}
+    # consolidated duplicate is recorded (claims it for idempotent re-ingest)
+    dup = [s for s in fm["sources"] if s.get("role") == "duplicate"]
+    assert dup and dup[0]["ref"] == "data/derived/workouts/health-dup.json"
 
     path = am.write_session(fm, body, tmp_path / "sessions")
     assert path.name == "2026-08-05-bikeerg.md"

@@ -35,21 +35,25 @@ data contract. `config/athlete.yaml` holds zone anchors. Sessions live in
 reviews in `plans/` and `reports/`, the evidence-graded coaching knowledge
 base in `knowledge/`.
 
-## Development
+## One-time setup per clone
+
+Paste as-is (macOS Homebrew Python blocks global installs, so use the venv):
 
 ```
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+git config core.hooksPath scripts/githooks
+cp config/privacy.local.yaml.example config/privacy.local.yaml
 python3 -m pytest tests/
 ```
 
+Then edit `config/privacy.local.yaml` with your real personal strings.
+New terminals need `source .venv/bin/activate` before running scripts (the
+pre-commit hook finds `.venv` on its own).
+
 ## Privacy (public repo)
 
-One-time per clone:
-
-```
-git config core.hooksPath scripts/githooks        # pre-commit privacy check
-cp config/privacy.local.yaml.example config/privacy.local.yaml   # then edit
-```
-
-The check blocks commits containing GPS/owner EXIF, addresses, phone numbers,
-personal emails, or your listed personal strings. Details in `CLAUDE.md`.
+The pre-commit hook installed above blocks commits containing GPS/owner EXIF,
+addresses, phone numbers, personal emails, or your listed personal strings.
+Details in `CLAUDE.md`.

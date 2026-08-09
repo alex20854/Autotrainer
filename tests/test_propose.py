@@ -89,3 +89,22 @@ def test_unextracted_photo_not_proposed():
     pending = dict(P1, extracted=False)
     result = pm.propose([], [pending], set(), MATCHING)
     assert result == {"auto_merge": [], "ambiguous": []}
+
+
+def test_late_arriving_record_attaches_to_existing_session():
+    # photo-only session already exists; the Health export arrives later and
+    # overlaps it -> attach case for Claude, never a duplicate single_source
+    sessions = [{"id": "2026-08-05-bikeerg", "start": "2026-08-05T06:01:00-04:00",
+                 "end": "2026-08-05T06:31:00-04:00", "modality": "bikeerg"}]
+    result = pm.propose([W1], [], set(), MATCHING, sessions)
+    assert result["auto_merge"] == []
+    case = result["ambiguous"][0]
+    assert case["kind"] == "attach_to_session"
+    assert case["session_id"] == "2026-08-05-bikeerg"
+
+
+def test_non_overlapping_session_does_not_block_single_source():
+    sessions = [{"id": "2026-08-04-rowerg", "start": "2026-08-04T06:00:00-04:00",
+                 "end": "2026-08-04T06:30:00-04:00", "modality": "rowerg"}]
+    result = pm.propose([W1], [], set(), MATCHING, sessions)
+    assert result["auto_merge"][0]["kind"] == "single_source"

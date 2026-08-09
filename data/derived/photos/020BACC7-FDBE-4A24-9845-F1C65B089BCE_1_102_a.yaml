@@ -1,0 +1,18 @@
+photo: data/raw/photos/020BACC7-FDBE-4A24-9845-F1C65B089BCE_1_102_a.jpeg
+converted: null
+exif_time: '2026-08-08T20:41:02'
+extracted: true
+machine: concept2-bikeerg
+machine_confidence: high
+fields:
+  elapsed_time_s:
+    value: 1509
+    confidence: high
+  distance_m:
+    value: 10799
+    confidence: high
+  watts_avg:
+    value: 128
+    confidence: high
+splits: []
+notes: PM5 standard screen; projected 12176m @30:00; stopped at 25:09

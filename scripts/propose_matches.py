@@ -71,6 +71,17 @@ def already_claimed(sessions_dir: Path) -> set[str]:
     return claimed
 
 
+def load_sessions(sessions_dir: Path) -> list[dict]:
+    """Existing sessions' time ranges, for attach-to-session detection."""
+    sessions = []
+    for path in sorted(sessions_dir.rglob("*.md")):
+        fm, _ = frontmatter.load(path)
+        if fm.get("start") and fm.get("end"):
+            sessions.append({"id": fm.get("id"), "start": fm["start"], "end": fm["end"],
+                             "modality": fm.get("modality")})
+    return sessions
+
+
 def load_sidecars(sidecar_dir: Path) -> list[dict]:
     sidecars = []
     for path in sorted(sidecar_dir.glob("*.yaml")):
@@ -135,8 +146,26 @@ def _td(seconds: float):
     return timedelta(seconds=seconds)
 
 
+def overlapping_session(workout: dict, sessions: list[dict], slack_s: float = 900) -> dict | None:
+    """First existing session whose time range overlaps this workout record.
+    Happens routinely: a photo-only session exists, then the Health export
+    arrives late (spec §5) — the record must ATTACH, not become a duplicate."""
+    w_start, w_end = records.parse_dt(workout["start"]), records.parse_dt(workout["end"])
+    for s in sessions:
+        s_start, s_end = records.parse_dt(s["start"]), records.parse_dt(s["end"])
+        if w_start.tzinfo is None:
+            w_start = w_start.replace(tzinfo=s_start.tzinfo)
+            w_end = w_end.replace(tzinfo=s_start.tzinfo)
+        if s_start.tzinfo is None:
+            s_start = s_start.replace(tzinfo=w_start.tzinfo)
+            s_end = s_end.replace(tzinfo=w_start.tzinfo)
+        if w_start <= s_end + _td(slack_s) and s_start <= w_end + _td(slack_s):
+            return s
+    return None
+
+
 def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
-            matching: dict) -> dict:
+            matching: dict, sessions: list[dict] | None = None) -> dict:
     workouts = [
         w for w in workouts
         if w["workout_type"] not in NON_CARDIO_TYPES
@@ -186,9 +215,23 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
         else:
             ambiguous.append(_case(pair, "confidence below auto-merge threshold"))
 
-    # unmatched workouts become single-source sessions — first-class (spec §7)
+    # unmatched workouts become single-source sessions — first-class (spec §7) —
+    # unless they overlap an existing session (late-arriving source): those go
+    # to Claude as attach cases, never as duplicate sessions
     for w in workouts:
         if w["record_id"] not in used_w:
+            existing = overlapping_session(w, sessions or [])
+            if existing:
+                ambiguous.append({
+                    "kind": "attach_to_session",
+                    "workout": _workout_summary(w),
+                    "session_id": existing["id"],
+                    "confidence": None,
+                    "evidence": [f"workout overlaps existing session {existing['id']} "
+                                 f"({existing['start']}–{existing['end']}) — "
+                                 "likely a late-arriving source for the same training"],
+                })
+                continue
             auto.append({
                 "kind": "single_source",
                 "workout": _workout_summary(w),
@@ -243,8 +286,9 @@ def main() -> int:
     workouts = records.load_records(args.workouts_dir)
     sidecars = load_sidecars(SIDECAR_DIR) if SIDECAR_DIR.is_dir() else []
     claimed = already_claimed(SESSIONS_DIR) if SESSIONS_DIR.is_dir() else set()
+    sessions = load_sessions(SESSIONS_DIR) if SESSIONS_DIR.is_dir() else []
 
-    proposals = propose(workouts, sidecars, claimed, matching)
+    proposals = propose(workouts, sidecars, claimed, matching, sessions)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(proposals, indent=1) + "\n", encoding="utf-8")
     print(f"proposals: {len(proposals['auto_merge'])} auto-merge, "

@@ -1,0 +1,18 @@
+photo: data/raw/photos/F3F2F955-02DD-4DD1-AE79-7CCFA6BCA82D_1_102_a.jpeg
+converted: null
+exif_time: '2026-08-03T17:32:44'
+extracted: true
+machine: concept2-bikeerg
+machine_confidence: high
+fields:
+  elapsed_time_s:
+    value: 1807
+    confidence: high
+  distance_m:
+    value: 12986
+    confidence: high
+  watts_avg:
+    value: 130
+    confidence: high
+splits: []
+notes: PM5 standard screen; 30:07

@@ -1,0 +1,15 @@
+photo: data/raw/photos/DBD2F37E-2616-4A5D-9C03-DA8EA1BA9B2B_1_105_c.jpeg
+converted: null
+exif_time: '2026-07-25T08:15:51'
+extracted: true
+machine: concept2-bikeerg
+machine_confidence: high
+fields:
+  elapsed_time_s:
+    value: 1207
+    confidence: high
+  watts_avg:
+    value: 133
+    confidence: high
+splits: []
+notes: PM5 bar-chart screen (no distance shown); pairs with 16392DF7 (same 20:07 workout)

@@ -1,0 +1,16 @@
+photo: data/raw/photos/16392DF7-2FF7-4FE8-B2FD-C798D8383F94_1_201_a.heic
+converted: data/derived/photos_converted/16392DF7-2FF7-4FE8-B2FD-C798D8383F94_1_201_a.jpg
+exif_time: '2026-07-25T08:16:25'
+extracted: true
+machine: concept2-bikeerg
+machine_confidence: high
+fields:
+  elapsed_time_s:
+    value: 1207
+    confidence: high
+  kcal:
+    value: 254
+    confidence: high
+splits: []
+notes: 'PM5 calorie screen: 501 Cal/hr, 254 Cal total; pairs with DBD2F37E (same 20:07
+  workout)'

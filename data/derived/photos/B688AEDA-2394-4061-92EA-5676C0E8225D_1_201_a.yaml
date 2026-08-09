@@ -1,0 +1,16 @@
+photo: data/raw/photos/B688AEDA-2394-4061-92EA-5676C0E8225D_1_201_a.heic
+converted: data/derived/photos_converted/B688AEDA-2394-4061-92EA-5676C0E8225D_1_201_a.jpg
+exif_time: '2026-07-26T18:51:40'
+extracted: true
+machine: concept2-bikeerg
+machine_confidence: high
+fields:
+  elapsed_time_s:
+    value: 1216
+    confidence: high
+  watts_avg:
+    value: 138
+    confidence: high
+splits: []
+notes: PM5 large-format screen (no distance shown); pairs with F5E66A00 (same 20:16
+  workout)

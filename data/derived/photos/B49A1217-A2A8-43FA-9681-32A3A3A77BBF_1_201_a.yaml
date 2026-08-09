@@ -1,0 +1,18 @@
+photo: data/raw/photos/B49A1217-A2A8-43FA-9681-32A3A3A77BBF_1_201_a.heic
+converted: data/derived/photos_converted/B49A1217-A2A8-43FA-9681-32A3A3A77BBF_1_201_a.jpg
+exif_time: '2026-08-06T21:08:49'
+extracted: true
+machine: concept2-bikeerg
+machine_confidence: high
+fields:
+  elapsed_time_s:
+    value: 1806
+    confidence: high
+  distance_m:
+    value: 12642
+    confidence: high
+  watts_avg:
+    value: 120
+    confidence: high
+splits: []
+notes: PM5 standard screen; 30:06

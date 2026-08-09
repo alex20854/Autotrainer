@@ -1,0 +1,14 @@
+# Raw Apple Health exports can exceed GitHub's 100 MB file limit — keep them local only.
+# Everything derived from them (data/derived/workouts/) IS committed as the durable form.
+data/raw/health/*
+!data/raw/health/.gitkeep
+
+# Converted photo copies are regenerable from data/raw/photos/ via scripts/prep_photos.py
+data/derived/photos_converted/
+
+# Reconciliation proposals are regenerated on every ingest
+data/derived/proposals.json
+
+__pycache__/
+*.pyc
+.pytest_cache/

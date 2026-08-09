@@ -1,0 +1,63 @@
+# Athlete configuration — the machine-readable contract for zones and matching.
+# Updated by /coach setup and after benchmark retests (benchmarks.md is the
+# dated human-readable log these values come from). Scripts read this file;
+# they never write it.
+
+athlete:
+  # Filled in by /coach setup. Formula-derived values are BOOTSTRAP ONLY and
+  # must be flagged as such until a field test replaces them (spec §11).
+  hr_max: null              # bpm; from observed max or field test, not 220-age
+  hr_resting: null          # bpm
+  lthr: null                # bpm; lactate threshold HR from a field test
+  maf_cap: null             # bpm; 180-age adjusted, if MAF-style base is used
+  timezone: "America/New_York"   # EXIF timestamps are interpreted in this zone
+
+# Zone model: 5 HR zones as % of LTHR (Friel-style). When lthr is null the
+# scripts fall back to % of hr_max (z2 = 60-70% etc.) and mark computed
+# metrics with zones_source: bootstrap.
+zones:
+  model: pct_lthr
+  bands:            # [low, high] as fraction of LTHR, upper bound exclusive
+    z1: [0.00, 0.85]
+    z2: [0.85, 0.89]
+    z3: [0.90, 0.94]
+    z4: [0.95, 0.99]
+    z5: [1.00, 9.99]
+
+# Per-modality power anchors (watts). ftp drives threshold/sweet-spot targets;
+# z2_watts_ceiling cross-checks that "easy" sessions were actually easy.
+power:
+  bikeerg:  {ftp: null, z2_watts_ceiling: null}
+  rowerg:   {ftp: null, z2_watts_ceiling: null}
+  skierg:   {ftp: null, z2_watts_ceiling: null}
+
+# Equipment the athlete actually uses; /coach plan should not prescribe
+# machines that aren't listed here.
+equipment:
+  - concept2-rowerg
+  - concept2-skierg
+  - concept2-bikeerg
+  - airdyne
+  - stairclimber
+  - versaclimber
+  - exercise-bike
+  - treadmill
+  - sled
+  - outdoor-running
+
+# Reconciliation settings (spec §7).
+matching:
+  photo_window_after_end_s: 600     # EXIF must fall in [start, end + 10 min]
+  duration_tolerance_s: 90          # |monitor - Health| cross-check
+  # Learned mapping: monitor/console machine -> plausible Apple Health workout
+  # types. Lookup failures LOWER confidence, never hard-fail (spec §7).
+  # /coach review appends new pairings here as they are learned.
+  modality_map:
+    concept2-rowerg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeOther]
+    concept2-skierg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
+    concept2-bikeerg:  [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeOther]
+    airdyne:           [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
+    stairclimber:      [HKWorkoutActivityTypeStairClimbing, HKWorkoutActivityTypeStairs, HKWorkoutActivityTypeOther]
+    versaclimber:      [HKWorkoutActivityTypeClimbing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
+    exercise-bike:     [HKWorkoutActivityTypeCycling]
+    treadmill:         [HKWorkoutActivityTypeRunning, HKWorkoutActivityTypeWalking]

@@ -9,6 +9,9 @@ data/derived/photos_converted/
 # Reconciliation proposals are regenerated on every ingest
 data/derived/proposals.json
 
+# Personal strings the privacy check greps for — local only, never committed
+config/privacy.local.yaml
+
 __pycache__/
 *.pyc
 .pytest_cache/

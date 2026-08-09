@@ -41,3 +41,15 @@ base in `knowledge/`.
 pip install -r requirements.txt
 python3 -m pytest tests/
 ```
+
+## Privacy (public repo)
+
+One-time per clone:
+
+```
+git config core.hooksPath scripts/githooks        # pre-commit privacy check
+cp config/privacy.local.yaml.example config/privacy.local.yaml   # then edit
+```
+
+The check blocks commits containing GPS/owner EXIF, addresses, phone numbers,
+personal emails, or your listed personal strings. Details in `CLAUDE.md`.

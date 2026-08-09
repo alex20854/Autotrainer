@@ -1,0 +1,5 @@
+#!/bin/sh
+# Blocks commits containing location/identity leaks (public repo).
+# Install once per clone:  git config core.hooksPath scripts/githooks
+# Deliberate override after human review:  git commit --no-verify
+exec python3 "$(git rev-parse --show-toplevel)/scripts/privacy_check.py" --staged

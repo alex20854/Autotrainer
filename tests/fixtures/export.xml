@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HealthData>
+<HealthData locale="en_US">
+ <ExportDate value="2026-08-08 12:00:00 -0400"/>
+ <!-- W1: clean BikeErg session; pairs with photo P1 (bikeerg, elapsed 1800s) -->
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 06:01:00 -0400" endDate="2026-08-05 06:01:00 -0400" value="105"/>
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 06:05:00 -0400" endDate="2026-08-05 06:05:00 -0400" value="124"/>
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 06:10:00 -0400" endDate="2026-08-05 06:10:00 -0400" value="131"/>
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 06:15:00 -0400" endDate="2026-08-05 06:15:00 -0400" value="133"/>
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 06:20:00 -0400" endDate="2026-08-05 06:20:00 -0400" value="135"/>
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 06:25:00 -0400" endDate="2026-08-05 06:25:00 -0400" value="136"/>
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 06:30:00 -0400" endDate="2026-08-05 06:30:00 -0400" value="134"/>
+ <!-- HR outside any workout window: must not be attributed -->
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-05 12:00:00 -0400" endDate="2026-08-05 12:00:00 -0400" value="72"/>
+ <Workout workoutActivityType="HKWorkoutActivityTypeCycling" duration="30.5" durationUnit="min" sourceName="Watch" startDate="2026-08-05 06:00:00 -0400" endDate="2026-08-05 06:30:30 -0400">
+  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" sum="310" unit="kcal" startDate="2026-08-05 06:00:00 -0400" endDate="2026-08-05 06:30:30 -0400"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceCycling" sum="14.2" unit="km" startDate="2026-08-05 06:00:00 -0400" endDate="2026-08-05 06:30:30 -0400"/>
+ </Workout>
+ <!-- W2 + W3: back-to-back sessions; photo P2 (skierg, elapsed 1500s) falls in
+      BOTH windows with agreeing durations -> deliberately contested/ambiguous -->
+ <Workout workoutActivityType="HKWorkoutActivityTypeRowing" duration="26.0" durationUnit="min" sourceName="Watch" startDate="2026-08-06 06:10:00 -0400" endDate="2026-08-06 06:36:00 -0400">
+  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" sum="240" unit="kcal" startDate="2026-08-06 06:10:00 -0400" endDate="2026-08-06 06:36:00 -0400"/>
+ </Workout>
+ <Workout workoutActivityType="HKWorkoutActivityTypeOther" duration="26.0" durationUnit="min" sourceName="Watch" startDate="2026-08-06 06:40:00 -0400" endDate="2026-08-06 07:06:00 -0400">
+  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" sum="230" unit="kcal" startDate="2026-08-06 06:40:00 -0400" endDate="2026-08-06 07:06:00 -0400"/>
+ </Workout>
+ <!-- W4: Health-only outdoor run, no photo -> single-source session -->
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-07 07:05:00 -0400" endDate="2026-08-07 07:05:00 -0400" value="142"/>
+ <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Watch" unit="count/min" startDate="2026-08-07 07:15:00 -0400" endDate="2026-08-07 07:15:00 -0400" value="149"/>
+ <Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="40.0" durationUnit="min" sourceName="Watch" startDate="2026-08-07 07:00:00 -0400" endDate="2026-08-07 07:40:00 -0400">
+  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" sum="420" unit="kcal" startDate="2026-08-07 07:00:00 -0400" endDate="2026-08-07 07:40:00 -0400"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceWalkingRunning" sum="6.4" unit="km" startDate="2026-08-07 07:00:00 -0400" endDate="2026-08-07 07:40:00 -0400"/>
+ </Workout>
+ <!-- Strength training: parsed into records but excluded from cardio proposals -->
+ <Workout workoutActivityType="HKWorkoutActivityTypeTraditionalStrengthTraining" duration="45.0" durationUnit="min" sourceName="Watch" startDate="2026-08-05 17:00:00 -0400" endDate="2026-08-05 17:45:00 -0400">
+  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" sum="180" unit="kcal" startDate="2026-08-05 17:00:00 -0400" endDate="2026-08-05 17:45:00 -0400"/>
+ </Workout>
+</HealthData>

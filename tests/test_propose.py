@@ -73,23 +73,57 @@ def test_modality_mismatch_lowers_but_never_hard_fails():
     assert any("modality unusual" in n for n in notes)
 
 
+EMPTY = {"auto_merge": [], "ambiguous": [], "baseline_routed": []}
+
+
 def test_claimed_evidence_is_skipped():
     claimed = {"data/derived/workouts/health-a.json", "p1.yaml"}
     result = pm.propose([W1], [P1], claimed, MATCHING)
-    assert result == {"auto_merge": [], "ambiguous": []}
+    assert result == EMPTY
 
 
 def test_strength_workouts_excluded():
     w = workout("health-e", "HKWorkoutActivityTypeTraditionalStrengthTraining",
                 "2026-08-05T17:00:00-04:00", "2026-08-05T17:45:00-04:00", 2700)
     result = pm.propose([w], [], set(), MATCHING)
-    assert result == {"auto_merge": [], "ambiguous": []}
+    assert result == EMPTY
 
 
 def test_unextracted_photo_not_proposed():
     pending = dict(P1, extracted=False)
     result = pm.propose([], [pending], set(), MATCHING)
-    assert result == {"auto_merge": [], "ambiguous": []}
+    assert result == EMPTY
+
+
+CLASSIFICATION = {"baseline_types": ["Outdoor Walk", "Walking"],
+                  "promote_min_duration_s": 1800}
+
+
+def test_short_walk_routes_to_baseline():
+    stroll = workout("health-w1", "Outdoor Walk",
+                     "2026-08-05T12:00:00-04:00", "2026-08-05T12:22:00-04:00", 1320)
+    result = pm.propose([stroll], [], set(), MATCHING, None, CLASSIFICATION)
+    assert result["auto_merge"] == [] and result["ambiguous"] == []
+    assert result["baseline_routed"] == ["health-w1"]
+
+
+def test_long_walk_promotes_to_session():
+    hike = workout("health-w2", "Outdoor Walk",
+                   "2026-08-05T12:00:00-04:00", "2026-08-05T12:50:00-04:00", 3000)
+    result = pm.propose([hike], [], set(), MATCHING, None, CLASSIFICATION)
+    assert result["baseline_routed"] == []
+    assert result["auto_merge"][0]["kind"] == "single_source"
+
+
+def test_short_walk_with_photo_promotes():
+    # a monitor photo pairing marks even a short walk as deliberate training
+    stroll = workout("health-w3", "Walking",
+                     "2026-08-05T12:00:00-04:00", "2026-08-05T12:22:00-04:00", 1320)
+    photo = sidecar("pw.yaml", "treadmill", "2026-08-05T12:23:00", elapsed=1300)
+    result = pm.propose([stroll], [photo], set(), MATCHING, None, CLASSIFICATION)
+    assert result["baseline_routed"] == []
+    all_cases = result["auto_merge"] + result["ambiguous"]
+    assert any(c["kind"] == "pair" for c in all_cases)
 
 
 def test_late_arriving_record_attaches_to_existing_session():

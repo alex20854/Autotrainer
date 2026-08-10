@@ -27,7 +27,7 @@ INDEX_PATH = REPO_ROOT / "data" / "index.jsonl"
 REQUIRED = ["id", "date", "modality", "duration_s", "sources", "match_confidence"]
 MODALITIES = {
     "rowerg", "skierg", "bikeerg", "airdyne", "stairclimber", "versaclimber",
-    "bike", "treadmill-run", "treadmill-walk", "run", "sled", "mixed",
+    "bike", "treadmill-run", "treadmill-walk", "run", "walk", "sled", "mixed",
 }
 SOURCE_KINDS = {"health", "photo", "c2", "user"}
 

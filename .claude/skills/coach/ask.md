@@ -7,6 +7,8 @@ evidence base — not generic fitness content.
 
 1. `data/index.jsonl` — what the athlete has actually done (never open
    hundreds of session files; the index answers history questions).
+   `data/baseline.jsonl` for "how much am I moving overall" — unstructured
+   walks/movement live there, not in the session ledger.
 2. Specific session files only when the question is about specific days.
 3. `knowledge/styles/*.md` + `knowledge/evidence.md` — claims and grades.
 4. `goals.md`, current plan, latest report — context for "should I...".

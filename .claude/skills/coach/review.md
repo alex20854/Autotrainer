@@ -45,6 +45,15 @@ decoupling trend, interval repeatability (same-style watts across weeks),
 adherence %, 80/20 session distribution. Compare against the §9 timeline for
 the current block ("week 5 of 8 — on schedule; watts@HR up 4%").
 
+**Baseline activity** (`data/baseline.jsonl`): this week's unstructured
+movement vs the 4-wk trend. Call out collapses ("baseline minutes down 60% —
+travel week?") and spikes; count it toward the §9 metabolic-frequency picture
+(acute insulin-sensitizing effect favors spreading movement out). Never
+compliance-score it — baseline is context, not prescription. If a walk in
+the rollup was clearly deliberate training, promote it: write the session
+file and rerun `build_baseline.py` (it drops claimed records automatically);
+tune `classification:` in athlete.yaml if the threshold keeps misrouting.
+
 ## 5. Adjust & write
 
 Decide next week's adjustment (progress, hold, or deload) with rationale tied

@@ -45,6 +45,22 @@ equipment:
   - sled
   - outdoor-running
 
+# Activity classification: training sessions vs baseline activity.
+# Baseline-type records (Apple Watch auto-detected walks etc.) go to the
+# weekly rollup (data/baseline.jsonl) instead of the session ledger, UNLESS
+# marked deliberate: duration >= promote_min_duration_s, or a monitor photo
+# pairs with them. Nothing is discarded — the rollup counts everything routed
+# away from sessions. /coach review tunes these values like the modality_map.
+classification:
+  baseline_types:
+    - Walking
+    - Outdoor Walk
+    - Indoor Walk
+    - Hiking
+    - HKWorkoutActivityTypeWalking
+    - HKWorkoutActivityTypeHiking
+  promote_min_duration_s: 1800
+
 # Reconciliation settings (spec §7).
 matching:
   photo_window_after_end_s: 600     # EXIF must fall in [start, end + 10 min]

@@ -31,7 +31,8 @@ from pathlib import Path
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import frontmatter, records
+from lib import records
+from lib import sessions as sessions_lib
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SESSIONS_DIR = REPO_ROOT / "data" / "sessions"
@@ -59,27 +60,8 @@ NON_CARDIO_TYPES = {
 }
 
 
-def already_claimed(sessions_dir: Path) -> set[str]:
-    """Refs (record files / photos) already attached to a session."""
-    claimed = set()
-    for path in sessions_dir.rglob("*.md"):
-        fm, _ = frontmatter.load(path)
-        for src in fm.get("sources") or []:
-            for key in ("ref", "extraction"):
-                if src.get(key):
-                    claimed.add(src[key])
-    return claimed
-
-
-def load_sessions(sessions_dir: Path) -> list[dict]:
-    """Existing sessions' time ranges, for attach-to-session detection."""
-    sessions = []
-    for path in sorted(sessions_dir.rglob("*.md")):
-        fm, _ = frontmatter.load(path)
-        if fm.get("start") and fm.get("end"):
-            sessions.append({"id": fm.get("id"), "start": fm["start"], "end": fm["end"],
-                             "modality": fm.get("modality")})
-    return sessions
+already_claimed = sessions_lib.already_claimed
+load_sessions = sessions_lib.load_sessions
 
 
 def load_sidecars(sidecar_dir: Path) -> list[dict]:
@@ -146,78 +128,7 @@ def _td(seconds: float):
     return timedelta(seconds=seconds)
 
 
-OVERLAP_FRACTION = 0.5  # records sharing >=50% of the shorter one's time are the same bout
-
-
-def _overlap_s(a: dict, b: dict) -> float:
-    a_s, a_e = records.parse_dt(a["start"]), records.parse_dt(a["end"])
-    b_s, b_e = records.parse_dt(b["start"]), records.parse_dt(b["end"])
-    if a_s.tzinfo is None and b_s.tzinfo is not None:
-        a_s, a_e = a_s.replace(tzinfo=b_s.tzinfo), a_e.replace(tzinfo=b_s.tzinfo)
-    if b_s.tzinfo is None and a_s.tzinfo is not None:
-        b_s, b_e = b_s.replace(tzinfo=a_s.tzinfo), b_e.replace(tzinfo=a_s.tzinfo)
-    return (min(a_e, b_e) - max(a_s, b_s)).total_seconds()
-
-
-def _richness(w: dict) -> tuple:
-    hr = w.get("hr") or {}
-    return (len(hr.get("series") or []), 1 if hr else 0,
-            sum(x is not None for x in (w.get("kcal"), w.get("distance_m"))))
-
-
-def consolidate_records(workouts: list[dict]) -> list[dict]:
-    """Collapse records that capture the SAME training bout (deterministic).
-
-    The same workout legitimately arrives multiple times: export.xml backfill
-    AND Health Auto Export (different type spellings, timestamps off by
-    seconds), Watch AND iPhone, Health AND a C2 trace. Same source kind ->
-    duplicate captures: keep the richest (longest HR series), carry the rest
-    as role=duplicate refs. Different kinds -> complementary evidence: one
-    merged entry, machine record winning duration/distance/watts and Health
-    winning HR/kcal/timing (spec §5). Future telemetry parsers get this merge
-    for free by emitting normalized records.
-    """
-    groups: list[list[dict]] = []
-    for w in sorted(workouts, key=lambda w: w["start"]):
-        for group in groups:
-            if any(_same_bout(w, other) for other in group):
-                group.append(w)
-                break
-        else:
-            groups.append([w])
-
-    out = []
-    for group in groups:
-        if len(group) == 1:
-            out.append(group[0])
-            continue
-        best_by_kind: dict[str, dict] = {}
-        for w in group:
-            best = best_by_kind.get(w["source_kind"])
-            if best is None or _richness(w) > _richness(best):
-                best_by_kind[w["source_kind"]] = w
-        machine, health = best_by_kind.get("c2"), best_by_kind.get("health")
-        primary = machine or health or group[0]
-        merged = dict(primary)
-        if machine and health:
-            # Health anchors absolute timing + HR; machine keeps output fields
-            merged["start"], merged["end"] = health["start"], health["end"]
-            merged["hr"] = health.get("hr")
-            if merged.get("kcal") is None:
-                merged["kcal"] = health.get("kcal")
-        merged["co_refs"] = [
-            {"kind": w["source_kind"],
-             "ref": f"data/derived/workouts/{w['record_id']}.json",
-             "role": "complement" if w["source_kind"] != primary["source_kind"] else "duplicate"}
-            for w in group if w["record_id"] != primary["record_id"]
-        ]
-        out.append(merged)
-    return out
-
-
-def _same_bout(a: dict, b: dict) -> bool:
-    shorter = min(a.get("duration_s") or 0, b.get("duration_s") or 0)
-    return shorter > 0 and _overlap_s(a, b) >= OVERLAP_FRACTION * shorter
+consolidate_records = records.consolidate_records
 
 
 def overlapping_session(workout: dict, sessions: list[dict], slack_s: float = 900) -> dict | None:
@@ -239,7 +150,8 @@ def overlapping_session(workout: dict, sessions: list[dict], slack_s: float = 90
 
 
 def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
-            matching: dict, sessions: list[dict] | None = None) -> dict:
+            matching: dict, sessions: list[dict] | None = None,
+            classification: dict | None = None) -> dict:
     workouts = [
         w for w in workouts
         if w["workout_type"] not in NON_CARDIO_TYPES
@@ -267,6 +179,24 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
         if pair["confidence"] >= 0.5:
             viable_w.setdefault(pair["workout"]["record_id"], []).append(pair)
             viable_s.setdefault(pair["sidecar"]["_sidecar_path"], []).append(pair)
+
+    # Classify: baseline-type records (casual walks and the like) belong to the
+    # weekly baseline rollup (build_baseline.py), not the session ledger —
+    # UNLESS something marks them deliberate training: duration >= the
+    # promotion threshold, or a viable photo pairing. Nothing is dropped;
+    # whatever is routed away here is picked up by the rollup.
+    cls = classification or {}
+    baseline_types = set(cls.get("baseline_types") or [])
+    promote_s = cls.get("promote_min_duration_s", 1800)
+    baseline_routed = sorted(
+        w["record_id"] for w in workouts
+        if w["workout_type"] in baseline_types
+        and (w.get("duration_s") or 0) < promote_s
+        and w["record_id"] not in viable_w
+    )
+    demoted = set(baseline_routed)
+    workouts = [w for w in workouts if w["record_id"] not in demoted]
+    pair_scores = [p for p in pair_scores if p["workout"]["record_id"] not in demoted]
 
     auto, ambiguous, used_w, used_s = [], [], set(), set()
     for pair in pair_scores:
@@ -325,7 +255,8 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
                 "evidence": ["photo matches no Health workout — photo-only session, "
                              "wrong-day photo, or non-workout shot"],
             })
-    return {"auto_merge": auto, "ambiguous": ambiguous}
+    return {"auto_merge": auto, "ambiguous": ambiguous,
+            "baseline_routed": baseline_routed}
 
 
 def _case(pair: dict, reason: str | None = None) -> dict:
@@ -359,16 +290,19 @@ def main() -> int:
 
     config = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
     matching = config.get("matching") or {}
+    classification = config.get("classification") or {}
     workouts = records.load_records(args.workouts_dir)
     sidecars = load_sidecars(SIDECAR_DIR) if SIDECAR_DIR.is_dir() else []
-    claimed = already_claimed(SESSIONS_DIR) if SESSIONS_DIR.is_dir() else set()
-    sessions = load_sessions(SESSIONS_DIR) if SESSIONS_DIR.is_dir() else []
+    claimed = already_claimed(SESSIONS_DIR)
+    sessions = load_sessions(SESSIONS_DIR)
 
-    proposals = propose(workouts, sidecars, claimed, matching, sessions)
+    proposals = propose(workouts, sidecars, claimed, matching, sessions, classification)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(proposals, indent=1) + "\n", encoding="utf-8")
     print(f"proposals: {len(proposals['auto_merge'])} auto-merge, "
-          f"{len(proposals['ambiguous'])} ambiguous -> {args.out.relative_to(REPO_ROOT)}")
+          f"{len(proposals['ambiguous'])} ambiguous, "
+          f"{len(proposals['baseline_routed'])} records -> baseline rollup "
+          f"-> {args.out.relative_to(REPO_ROOT)}")
     return 0
 
 

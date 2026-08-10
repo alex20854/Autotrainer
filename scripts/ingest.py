@@ -6,10 +6,11 @@ Runs, in order:
   2. parse_auto_export     (ongoing Health Auto Export JSON)
   3. parse_c2              (opportunistic C2 CSVs)
   4. prep_photos           (HEIC conversion + EXIF sidecars)
-  5. propose_matches       (candidate pairing)
+  5. propose_matches       (candidate pairing + baseline routing)
   6. apply_merges          (write auto-merge session files)
-  7. compute_metrics       (time-in-zone, decoupling, EF, bouts)
-  8. build_index           (regenerate index.jsonl)
+  7. build_baseline        (weekly baseline-activity rollup)
+  8. compute_metrics       (time-in-zone, decoupling, EF, bouts)
+  9. build_index           (regenerate index.jsonl)
 
 Everything is idempotent — safe to re-run any time new raw files appear.
 After this, Claude's judgment work remains: vision-extract pending photos
@@ -33,6 +34,7 @@ STEPS = [
     "prep_photos.py",
     "propose_matches.py",
     "apply_merges.py",
+    "build_baseline.py",
     "compute_metrics.py",
     "build_index.py",
 ]

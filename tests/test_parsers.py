@@ -41,6 +41,15 @@ def test_auto_export_parses_workout(tmp_path):
     assert rec["hr"]["max"] == 138
 
 
+def test_auto_export_duration_units_heuristic():
+    # app versions disagree on the duration unit; the wall-clock span decides
+    # (real bug: seconds read as minutes made 21-min walks look like 21 hours)
+    start, end = "2026-07-13T10:38:20-04:00", "2026-07-13T10:59:10-04:00"  # 1250s
+    assert parse_auto_export._duration_s(1248.4, start, end) == 1248.4   # seconds
+    assert parse_auto_export._duration_s(20.8, start, end) == 20.8 * 60  # minutes
+    assert parse_auto_export._duration_s(None, start, end) is None
+
+
 def test_c2_summary_csv(tmp_path):
     recs = parse_c2.parse_file(FIXTURES / "c2_logbook.csv", tmp_path)
     assert len(recs) == 1

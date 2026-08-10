@@ -75,11 +75,22 @@ def _to_record(w: dict, source: Path) -> dict | None:
         workout_type=w.get("name") or w.get("workoutActivityType") or "unknown",
         start=start,
         end=end,
-        duration_s=_qty(w.get("duration")) * 60 if w.get("duration") else None,
+        duration_s=_duration_s(_qty(w.get("duration")), start, end),
         kcal=round(kcal) if kcal is not None else None,
         distance_m=round(distance_km * 1000) if distance_km is not None else None,
         hr=hr,
     )
+
+
+def _duration_s(value: float | None, start: str, end: str) -> float | None:
+    """The app's duration unit varies by version (minutes or seconds).
+    The two readings differ by 60x, so pick the one closer to the wall-clock
+    span — unambiguous for any workout longer than a minute."""
+    if value is None:
+        return None
+    span = (records.parse_dt(end) - records.parse_dt(start)).total_seconds()
+    as_minutes, as_seconds = value * 60, value
+    return as_minutes if abs(as_minutes - span) <= abs(as_seconds - span) else as_seconds
 
 
 def _qty(value) -> float | None:

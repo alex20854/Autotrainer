@@ -72,7 +72,7 @@ matching:
     concept2-rowerg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeOther]
     concept2-skierg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
     concept2-bikeerg:  [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeOther]
-    airdyne:           [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
+    airdyne:           [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther, Elliptical]
     stairclimber:      [HKWorkoutActivityTypeStairClimbing, HKWorkoutActivityTypeStairs, HKWorkoutActivityTypeOther]
     versaclimber:      [HKWorkoutActivityTypeClimbing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
     exercise-bike:     [HKWorkoutActivityTypeCycling]

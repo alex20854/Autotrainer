@@ -27,7 +27,7 @@ zones:
 # Per-modality power anchors (watts). ftp drives threshold/sweet-spot targets;
 # z2_watts_ceiling cross-checks that "easy" sessions were actually easy.
 power:
-  bikeerg:  {ftp: null, z2_watts_ceiling: null}
+  bikeerg:  {ftp: null, z2_watts_ceiling: 130}  # BOOTSTRAP: rides <=128W decoupled <5%, 133W+ decoupled 9-18% (Jul-Aug 2026); field test pending
   rowerg:   {ftp: null, z2_watts_ceiling: null}
   skierg:   {ftp: null, z2_watts_ceiling: null}
 

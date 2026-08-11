@@ -6,7 +6,7 @@
 athlete:
   # Filled in by /coach setup. Formula-derived values are BOOTSTRAP ONLY and
   # must be flagged as such until a field test replaces them (spec §11).
-  hr_max: null              # bpm; from observed max or field test, not 220-age
+  hr_max: 185               # BOOTSTRAP: observed 176 fatigued 2026-08-10 + reported headroom (see benchmarks.md); field test pending
   hr_resting: null          # bpm
   lthr: null                # bpm; lactate threshold HR from a field test
   maf_cap: null             # bpm; 180-age adjusted, if MAF-style base is used

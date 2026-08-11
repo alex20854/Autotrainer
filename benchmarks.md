@@ -17,7 +17,13 @@ Test menu:
 
 ## Results
 
-_(none yet — first test scheduled during `/coach setup`)_
+### 2026-08-10 — observed max HR (bikeerg, informal)
+- Result: HR max **176 bpm** observed during a 22-min easy ride finished with a
+  hard surge over the last few minutes.
+- Conditions/notes: athlete was fatigued; reports confident headroom into the
+  180s, possibly 190s, when fresh. Treat 176 as a floor, not the max.
+- athlete.yaml updated: yes — hr_max set to 185 (athlete-estimated midpoint,
+  BOOTSTRAP ONLY until the LTHR/FTP field test).
 
 Entry template:
 

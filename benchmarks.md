@@ -25,6 +25,12 @@ Test menu:
 - athlete.yaml updated: yes — hr_max set to 185 (athlete-estimated midpoint,
   BOOTSTRAP ONLY until the LTHR/FTP field test).
 
+### 2026-08-10 — subjective watt calibration (bikeerg)
+- Athlete report: 100–115 W very comfortable; effort becomes noticeably
+  harder around 125–135 W. Agrees independently with the decoupling
+  evidence (<=128 W clean, 133 W+ decoupled) — LT1 sits near ~130 W.
+- athlete.yaml updated: z2_watts_ceiling 130 confirmed (still bootstrap).
+
 Entry template:
 
 ```

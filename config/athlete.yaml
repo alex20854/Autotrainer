@@ -8,7 +8,7 @@ athlete:
   # must be flagged as such until a field test replaces them (spec §11).
   hr_max: 185               # BOOTSTRAP: observed 176 fatigued 2026-08-10 + reported headroom (see benchmarks.md); field test pending
   hr_resting: null          # bpm
-  lthr: null                # bpm; lactate threshold HR from a field test
+  lthr: 157                 # 2026-08-11 field test, final-10-min avg HR; possibly a touch low (test judged sub-maximal)
   maf_cap: null             # bpm; 180-age adjusted, if MAF-style base is used
   timezone: "America/New_York"   # EXIF timestamps are interpreted in this zone
 
@@ -27,7 +27,7 @@ zones:
 # Per-modality power anchors (watts). ftp drives threshold/sweet-spot targets;
 # z2_watts_ceiling cross-checks that "easy" sessions were actually easy.
 power:
-  bikeerg:  {ftp: null, z2_watts_ceiling: 130}  # BOOTSTRAP: rides <=128W decoupled <5%, 133W+ decoupled 9-18% (Jul-Aug 2026); field test pending
+  bikeerg:  {ftp: 142, z2_watts_ceiling: 130}  # ftp = 0.95 x 150W (2026-08-11 test) — CONSERVATIVE FLOOR, test sub-maximal; ceiling from decoupling evidence; re-test ~4-6 wks
   rowerg:   {ftp: null, z2_watts_ceiling: null}
   skierg:   {ftp: null, z2_watts_ceiling: null}
 

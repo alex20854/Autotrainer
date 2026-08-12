@@ -17,11 +17,25 @@ Test menu:
 
 ## Results
 
+### 2026-08-11 — LTHR/FTP field test (concept2-bikeerg)
+- Result: 20:06 @ **150 W avg**, 9,095 m (PM5). HR built 147→161 over the final
+  15 min, max 170; **LTHR = 157** (final-10-min avg from the HR series).
+  **FTP = 142 W** (95% of 20-min avg).
+- Conditions/notes: short untracked warm-up; even pacing, good execution — but
+  judged **sub-maximal**: final HR sat well below the athlete's known max
+  (>=176), and ride history includes casual 138-144 W efforts. Treat both
+  anchors as conservative floors; re-test with more aggressive pacing in
+  4-6 weeks. Record: health-2026-08-11T210335-indoor-cycling.
+- athlete.yaml updated: yes — lthr 157; power.bikeerg.ftp 142.
+
 ### 2026-08-10 — observed max HR (bikeerg, informal)
 - Result: HR max **176 bpm** observed during a 22-min easy ride finished with a
   hard surge over the last few minutes.
 - Conditions/notes: athlete was fatigued; reports confident headroom into the
   180s, possibly 190s, when fresh. Treat 176 as a floor, not the max.
+  (The 176 came in a 1.7-min all-out burst logged separately —
+  record health-2026-08-10T212716-elliptical; kept out of the session
+  ledger as a benchmark probe, not training.)
 - athlete.yaml updated: yes — hr_max set to 185 (athlete-estimated midpoint,
   BOOTSTRAP ONLY until the LTHR/FTP field test).
 

@@ -53,6 +53,7 @@ TYPE_TO_MODALITY = {
     "Indoor Walk": "treadmill-walk",
     "Hiking": "walk",
     "Stair Stepper": "stairclimber",
+    "Stair Climbing": "stairclimber",
     "c2-rowerg": "rowerg",
     "c2-rower": "rowerg",
     "c2-skierg": "skierg",

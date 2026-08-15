@@ -65,6 +65,11 @@ classification:
 matching:
   photo_window_after_end_s: 600     # EXIF must fall in [start, end + 10 min]
   duration_tolerance_s: 90          # |monitor - Health| cross-check
+  # Records /coach review deliberately keeps OUT of the session ledger
+  # (benchmark probes, accidental recordings). Still in derived records and
+  # citable from benchmarks.md; just never proposed as sessions again.
+  ignore_records:
+    - health-2026-08-10T212716-elliptical   # 1.7-min max-HR probe (benchmarks.md 2026-08-10)
   # Learned mapping: monitor/console machine -> plausible Apple Health workout
   # types. Lookup failures LOWER confidence, never hard-fail (spec §7).
   # /coach review appends new pairings here as they are learned.

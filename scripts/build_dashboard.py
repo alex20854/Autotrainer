@@ -295,7 +295,7 @@ def build() -> str:
     return f"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cardio Coach — Dashboard</title>
+<title>Cardio Coach</title>
 <style>{CSS}</style>
 <div class="wrap">
 <h1>Cardio Coach</h1>
@@ -339,8 +339,18 @@ def _shift(date: str, days: int) -> str:
 
 
 def main() -> int:
-    OUT_PATH.write_text(build(), encoding="utf-8")
+    import argparse
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--artifact", type=Path, default=None,
+                    help="also write an artifact-ready copy (no doctype — the "
+                         "claude.ai artifact wrapper supplies the document shell)")
+    args = ap.parse_args()
+    doc = build()
+    OUT_PATH.write_text(doc, encoding="utf-8")
     print(f"dashboard.html rendered ({OUT_PATH.stat().st_size // 1024} KB)")
+    if args.artifact:
+        args.artifact.write_text(doc.replace("<!doctype html>\n", "", 1), encoding="utf-8")
+        print(f"artifact copy -> {args.artifact}")
     return 0
 
 

@@ -10,9 +10,9 @@ athlete:
   hr_resting: null          # bpm
   # For the dashboard comparison section + VO2max estimate (public repo —
   # these are mild quasi-identifiers; leave null to keep them out):
-  age: null                 # years
-  sex: null                 # male | female (percentile tables)
-  weight_kg: null
+  age: 43
+  sex: male
+  weight_kg: 80               # 176 lbs, 2026-08-14
   lthr: 157                 # 2026-08-11 field test, final-10-min avg HR; possibly a touch low (test judged sub-maximal)
   maf_cap: null             # bpm; 180-age adjusted, if MAF-style base is used
   timezone: "America/New_York"   # EXIF timestamps are interpreted in this zone

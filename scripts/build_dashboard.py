@@ -213,6 +213,66 @@ def stacked_bar_chart(rows, series, colors, *, w=470, h=200, unit="min"):
     return "".join(parts)
 
 
+def comparison_section(config) -> str:
+    """VO2max dot plot: the athlete vs reference points, one shared axis."""
+    ref_path = REPO_ROOT / "knowledge" / "reference-values.yaml"
+    if not ref_path.exists():
+        return ""
+    refs = yaml.safe_load(ref_path.read_text())
+    athlete = config.get("athlete") or {}
+    power = (config.get("power") or {}).get("bikeerg") or {}
+    age, sex, kg = athlete.get("age"), athlete.get("sex"), athlete.get("weight_kg")
+    ftp = power.get("ftp")
+
+    rows = [(a["label"], a["vo2max"], a["note"], "ref") for a in refs["athletes"]]
+    if age and sex and refs["percentiles"].get(sex):
+        decade = f"{age//10*10}-{age//10*10+9}"
+        pair = refs["percentiles"][sex].get(decade)
+        if pair:
+            rows.append((f"Top 10%, {sex} {decade}", pair[1], "FRIEND registry (approx.)", "ref"))
+            rows.append((f"Average, {sex} {decade}", pair[0], "FRIEND registry (approx.)", "ref"))
+    you = None
+    if kg and ftp:
+        est = refs["estimate"]
+        p20 = ftp / 0.95
+        you = round((est["acsm_slope"] * (p20 / est["p20_to_pvo2max_divisor"]) / kg
+                     + est["acsm_intercept"]), 1)
+        rows.append(("You (estimated floor)", you,
+                     f"from the 20-min test @ {round(p20)} W, {kg} kg — sub-maximal, so the true value is likely higher", "you"))
+    if not rows:
+        return ""
+    rows.sort(key=lambda r: -r[1])
+
+    w, row_h, pad_l, pad_r = 470, 34, 10, 56
+    h = len(rows) * row_h + 34
+    vmax = max(r[1] for r in rows) * 1.12
+    xs = _scale(0, vmax, pad_l, w - pad_r)
+    parts = [f'<svg viewBox="0 0 {w} {h}" width="100%" role="img">']
+    for t in _y_ticks(0, vmax, 4):
+        x = xs(t)
+        parts.append(f'<line x1="{x:.1f}" y1="6" x2="{x:.1f}" y2="{h-26}" stroke="var(--grid)" stroke-width="1"/>')
+        parts.append(f'<text x="{x:.1f}" y="{h-12}" text-anchor="middle">{t:g}</text>')
+    for i, (label, v, note, kind) in enumerate(rows):
+        y = i * row_h + 24
+        color = "var(--train)" if kind == "you" else "var(--muted)"
+        weight = "650" if kind == "you" else "400"
+        parts.append(f'<line x1="{xs(0):.1f}" y1="{y}" x2="{xs(v):.1f}" y2="{y}" stroke="{color}" stroke-width="2" opacity="0.45"/>')
+        parts.append(f'<circle cx="{xs(v):.1f}" cy="{y}" r="5" fill="{color}" stroke="var(--surface)" stroke-width="2"/>')
+        parts.append(f'<circle cx="{xs(v):.1f}" cy="{y}" r="12" fill="transparent" data-tip="{html.escape(label + chr(10) + str(v) + " ml/kg/min — " + note)}"/>')
+        parts.append(f'<text x="{xs(0):.1f}" y="{y-8}" class="lab" style="font-weight:{weight}">{html.escape(label)}</text>')
+        parts.append(f'<text x="{xs(v)+10:.1f}" y="{y+4:.1f}" style="font-weight:{weight}">{v:g}</text>')
+    parts.append("</svg>")
+    missing = ""
+    if you is None:
+        missing = ("<p class='d'>Add <code>age</code>, <code>sex</code> and "
+                   "<code>weight_kg</code> to config/athlete.yaml to place "
+                   "yourself (and your age-group lines) on this scale.</p>")
+    return f"""<div class="card"><h2>VO&#8322;max in context</h2>
+<div class="d">ml/kg/min — estimates and literature values, not lab tests;
+your point is a floor (sub-maximal test)</div>
+{"".join(parts)}{missing}</div>"""
+
+
 # ---------------------------------------------------------------- assembly
 
 def tile(k, v, n=""):
@@ -319,6 +379,7 @@ def build() -> str:
 <div class="card"><h2>Baseline activity</h2>
 <div class="d">unstructured movement (walks) — tracked, never scored</div>
 {stacked_bar_chart(base_rows, ["m"], {"m": "var(--base)"})}</div>
+{comparison_section(config)}
 <div class="card"><h2>Benchmarks</h2>
 <table><tr><th>date</th><th>test</th><th>result</th></tr>{bench_rows}</table></div>
 <div class="card full"><h2>Recent sessions</h2>

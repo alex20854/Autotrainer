@@ -11,6 +11,7 @@ Runs, in order:
   7. build_baseline        (weekly baseline-activity rollup)
   8. compute_metrics       (time-in-zone, decoupling, EF, bouts)
   9. build_index           (regenerate index.jsonl)
+ 10. build_dashboard       (re-render dashboard.html)
 
 Everything is idempotent — safe to re-run any time new raw files appear.
 After this, Claude's judgment work remains: vision-extract pending photos
@@ -37,6 +38,7 @@ STEPS = [
     "build_baseline.py",
     "compute_metrics.py",
     "build_index.py",
+    "build_dashboard.py",
 ]
 
 

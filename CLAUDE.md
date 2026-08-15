@@ -24,6 +24,7 @@ strict:
 | `data/sessions/` | canonical session files | `apply_merges.py` (auto) + Claude (ambiguous) |
 | `data/index.jsonl` | generated whole-history index | `build_index.py` only |
 | `data/baseline.jsonl` | generated weekly rollup of unstructured movement (walks etc.) | `build_baseline.py` only |
+| `dashboard.html` | generated read-only visual (spec §2: rendering, no logic/state) | `build_dashboard.py` only |
 | `plans/`, `reports/` | weekly plans and reviews | Claude |
 | `knowledge/` | coaching KB + evidence dossier + machines file | Claude, sourced from evidence |
 | `goals.md`, `benchmarks.md` | goal state, dated test results | Claude |

@@ -27,6 +27,9 @@ Talk to the coach in Claude Code:
 
 Then `/coach ingest`.
 
+**Dashboard:** every ingest re-renders `dashboard.html` — a single
+self-contained file (no server, no dependencies). Open it in any browser.
+
 ## Layout
 
 `CLAUDE.md` is the operating manual (file map, rules). `docs/schema.md` is the

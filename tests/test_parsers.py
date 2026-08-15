@@ -50,6 +50,16 @@ def test_auto_export_duration_units_heuristic():
     assert parse_auto_export._duration_s(None, start, end) is None
 
 
+def test_auto_export_metrics_upsert(tmp_path):
+    out = tmp_path / "metrics.jsonl"
+    n = parse_auto_export.parse_metrics([FIXTURES / "auto_export.json"], out)
+    assert n == 3  # whitelisted only — step_count excluded
+    lines = [l for l in out.read_text().splitlines()]
+    assert any('"vo2_max"' in l and "33.4" in l for l in lines)
+    # re-run upserts, never duplicates
+    assert parse_auto_export.parse_metrics([FIXTURES / "auto_export.json"], out) == 3
+
+
 def test_c2_summary_csv(tmp_path):
     recs = parse_c2.parse_file(FIXTURES / "c2_logbook.csv", tmp_path)
     assert len(recs) == 1

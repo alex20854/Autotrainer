@@ -19,6 +19,18 @@
           {"date": "2026-08-08 07:00:10 -0400", "qty": 138}
         ]
       }
+    ],
+    "metrics": [
+      {"name": "resting_heart_rate", "units": "count/min", "data": [
+        {"date": "2026-08-07 00:00:00 -0400", "qty": 57},
+        {"date": "2026-08-08 00:00:00 -0400", "qty": 55}
+      ]},
+      {"name": "vo2_max", "units": "ml/(kg·min)", "data": [
+        {"date": "2026-08-08 00:00:00 -0400", "qty": 33.4}
+      ]},
+      {"name": "step_count", "units": "count", "data": [
+        {"date": "2026-08-08 00:00:00 -0400", "qty": 9000}
+      ]}
     ]
   }
 }

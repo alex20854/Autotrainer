@@ -40,7 +40,21 @@ python3 scripts/compute_metrics.py && python3 scripts/build_index.py
 
 (The extractions may enable new pairings.)
 
-## 4. Report
+## 4. Refresh the hosted dashboard
+
+Ingest already re-rendered `dashboard.html`. If this session has the Artifact
+tool, also refresh the hosted copy (same URL every time):
+
+```
+python3 scripts/build_dashboard.py --artifact /tmp/cardio-coach.html
+```
+
+then publish that file with `url:
+https://claude.ai/code/artifact/6f62fc9e-af13-4c78-8b0c-3a231c7930f0`
+(favicon 🚴). Sessions without the Artifact tool skip this — the committed
+`dashboard.html` is always current regardless.
+
+## 5. Report
 
 Tell the athlete: sessions added (by day/modality), anything the metrics pass
 flagged (`zones_source: bootstrap` or `unconfigured` — prompt setup/field

@@ -29,6 +29,9 @@ Then `/coach ingest`.
 
 **Dashboard:** every ingest re-renders `dashboard.html` — a single
 self-contained file (no server, no dependencies). Open it in any browser.
+A hosted copy lives as a private claude.ai artifact (URL in
+`.claude/skills/coach/ingest.md`), refreshed by `/coach ingest` whenever the
+session can publish artifacts.
 
 ## Layout
 

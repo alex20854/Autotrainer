@@ -95,6 +95,12 @@ def test_unextracted_photo_not_proposed():
     assert result == EMPTY
 
 
+def test_ignored_records_never_proposed():
+    matching = dict(MATCHING, ignore_records=["health-a"])
+    result = pm.propose([W1], [], set(), matching)
+    assert result == EMPTY
+
+
 CLASSIFICATION = {"baseline_types": ["Outdoor Walk", "Walking"],
                   "promote_min_duration_s": 1800}
 

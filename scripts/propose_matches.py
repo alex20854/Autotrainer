@@ -152,9 +152,11 @@ def overlapping_session(workout: dict, sessions: list[dict], slack_s: float = 90
 def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
             matching: dict, sessions: list[dict] | None = None,
             classification: dict | None = None) -> dict:
+    ignored = set(matching.get("ignore_records") or [])
     workouts = [
         w for w in workouts
         if w["workout_type"] not in NON_CARDIO_TYPES
+        and w["record_id"] not in ignored
         and f"data/derived/workouts/{w['record_id']}.json" not in claimed
     ]
     workouts = consolidate_records(workouts)

@@ -1,0 +1,40 @@
+# Reference VO2max values for the dashboard's comparison section.
+# Curated by Claude from published sources; the dashboard script renders these
+# verbatim and never invents numbers. All values are ml/kg/min. Approximate
+# literature figures — ranges are honest, precision is not claimed.
+#
+# Sources: FRIEND registry percentiles (Kaminsky et al., Mayo Clin Proc —
+# treadmill-based, so cycling comparisons run slightly conservative);
+# rowing & cycling elite values from sport-physiology literature (grade B/C,
+# see knowledge/evidence.md framing on practitioner-consensus numbers).
+
+percentiles:  # by sex, age decade: [50th, 90th]  ("average" and "top 10%")
+  male:
+    20-29: [48, 59]
+    30-39: [44, 56]
+    40-49: [41, 52]
+    50-59: [36, 46]
+    60-69: [31, 40]
+  female:
+    20-29: [38, 49]
+    30-39: [34, 45]
+    40-49: [31, 41]
+    50-59: [27, 35]
+    60-69: [24, 30]
+
+athletes:
+  - label: "Collegiate rower"
+    vo2max: 65
+    note: "men's heavyweight typically ~62-70; lightweight/women ~55-65"
+  - label: "Elite pro cyclist"
+    vo2max: 78
+    note: "WorldTour typically ~70-85"
+
+# VO2max estimation from the BikeErg 20-min test (documented so the number is
+# reproducible): power at VO2max ~= P20 / 0.85, then ACSM leg-cycling
+# VO2 = 10.8 x W / kg + 7. Grade C estimate; a sub-maximal test biases it LOW,
+# so the dashboard labels it a floor.
+estimate:
+  p20_to_pvo2max_divisor: 0.85
+  acsm_slope: 10.8
+  acsm_intercept: 7

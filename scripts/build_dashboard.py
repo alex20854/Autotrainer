@@ -237,8 +237,23 @@ def comparison_section(config) -> str:
         p20 = ftp / 0.95
         you = round((est["acsm_slope"] * (p20 / est["p20_to_pvo2max_divisor"]) / kg
                      + est["acsm_intercept"]), 1)
-        rows.append(("You (estimated floor)", you,
-                     f"from the 20-min test @ {round(p20)} W, {kg} kg — sub-maximal, so the true value is likely higher", "you"))
+        rows.append(("You — power floor", you,
+                     f"from the 20-min test @ {round(p20)} W, {kg} kg — leg-limited, known low", "you"))
+    metrics_path = REPO_ROOT / "data" / "derived" / "metrics.jsonl"
+    if metrics_path.exists():
+        vo2_points = [json.loads(l) for l in metrics_path.open()
+                      if '"vo2_max"' in l]
+        if vo2_points:
+            latest = max(vo2_points, key=lambda p: p["date"])
+            rows.append(("You — Apple Watch", latest["value"],
+                         f"Cardio Fitness estimate {latest['date']} — walk-derived, "
+                         "tends to under-read casual walkers", "you"))
+    hr_rest = athlete.get("hr_resting")
+    hr_max = athlete.get("hr_max")
+    if hr_rest and hr_max:
+        rows.append(("You — HR-ratio", round(15.3 * hr_max / hr_rest, 1),
+                     f"Uth–Sørensen: 15.3 × {hr_max} ÷ {hr_rest} — "
+                     "quad-independent, tends optimistic", "you"))
     if not rows:
         return ""
     rows.sort(key=lambda r: -r[1])
@@ -269,7 +284,8 @@ def comparison_section(config) -> str:
                    "yourself (and your age-group lines) on this scale.</p>")
     return f"""<div class="card"><h2>VO&#8322;max in context</h2>
 <div class="d">ml/kg/min — estimates and literature values, not lab tests;
-your point is a floor (sub-maximal test)</div>
+your true value most likely sits between the power floor and the HR-ratio
+estimate</div>
 {"".join(parts)}{missing}</div>"""
 
 

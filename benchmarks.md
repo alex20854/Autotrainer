@@ -17,6 +17,15 @@ Test menu:
 
 ## Results
 
+### 2026-08-14 — VO2max triangulation (three methods)
+- Result: power floor **30.7** (leg-limited 20-min test, ACSM); Apple Watch
+  Cardio Fitness **33.4** (walk-derived, under-reads casual walkers);
+  Uth–Sørensen HR-ratio **~51** (15.3 × 185 ÷ 55, tends optimistic).
+- Conditions/notes: honest verdict — true value most likely mid-to-upper 30s.
+  Resting HR 52-55 (athletic range); RHR spiked 52→63 for two days after the
+  08-11 field test (recovery signal). Sources: data/derived/metrics.jsonl.
+- athlete.yaml updated: yes — hr_resting 55.
+
 ### 2026-08-11 — LTHR/FTP field test (concept2-bikeerg)
 - Result: 20:06 @ **150 W avg**, 9,095 m (PM5). HR built 147→161 over the final
   15 min, max 170; **LTHR = 157** (final-10-min avg from the HR series).

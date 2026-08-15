@@ -112,18 +112,58 @@ def _repo_rel(path: Path) -> Path:
         return path
 
 
+# Daily health metrics worth keeping (recovery + estimation signals). The
+# exports carry dozens; this whitelist is the deliberate, reviewable choice.
+METRIC_WHITELIST = {"resting_heart_rate", "vo2_max", "heart_rate_variability"}
+METRICS_PATH = records.REPO_ROOT / "data" / "derived" / "metrics.jsonl"
+
+
+def parse_metrics(files: list[Path], out_path: Path = METRICS_PATH) -> int:
+    """Upsert whitelisted daily metrics into data/derived/metrics.jsonl.
+    Merge (not rebuild): old raw exports may be gone, but their points stay."""
+    points: dict[tuple[str, str], dict] = {}
+    if out_path.exists():
+        for line in out_path.read_text(encoding="utf-8").splitlines():
+            pt = json.loads(line)
+            points[(pt["date"], pt["name"])] = pt
+    for f in files:
+        try:
+            payload = json.loads(f.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            continue
+        for metric in (payload.get("data") or {}).get("metrics") or []:
+            if metric.get("name") not in METRIC_WHITELIST:
+                continue
+            for pt in metric.get("data") or []:
+                value = _qty(pt.get("qty") if "qty" in pt else pt.get("Avg", pt.get("avg")))
+                date = str(pt.get("date"))[:10]
+                if value is None or len(date) != 10:
+                    continue
+                points[(date, metric["name"])] = {
+                    "date": date, "name": metric["name"],
+                    "value": round(value, 1), "units": metric.get("units"),
+                }
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8") as f:
+        for key in sorted(points):
+            f.write(json.dumps(points[key], separators=(",", ":")) + "\n")
+    return len(points)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("inputs", nargs="*", default=["data/raw/health"])
     ap.add_argument("--out", type=Path, default=None)
     args = ap.parse_args()
-    total = 0
+    total, all_files = 0, []
     for inp in args.inputs:
         p = Path(inp)
         files = sorted(p.glob("*.json")) if p.is_dir() else [p] if p.exists() else []
+        all_files.extend(files)
         for f in files:
             total += len(parse_file(f, args.out))
-    print(f"auto-export: {total} workouts")
+    n_metrics = parse_metrics(all_files)
+    print(f"auto-export: {total} workouts, {n_metrics} daily metric points")
     return 0
 
 

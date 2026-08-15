@@ -7,7 +7,7 @@ athlete:
   # Filled in by /coach setup. Formula-derived values are BOOTSTRAP ONLY and
   # must be flagged as such until a field test replaces them (spec §11).
   hr_max: 185               # BOOTSTRAP: observed 176 fatigued 2026-08-10 + reported headroom (see benchmarks.md); field test pending
-  hr_resting: null          # bpm
+  hr_resting: 55            # bpm; Watch daily values 52-63 Aug 2026, typical ~55 (spikes post-hard-efforts)
   # For the dashboard comparison section + VO2max estimate (public repo —
   # these are mild quasi-identifiers; leave null to keep them out):
   age: 43

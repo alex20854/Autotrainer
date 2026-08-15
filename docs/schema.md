@@ -134,6 +134,20 @@ of the HR data.
   carry `splits` (list of `{t_s, distance_m, pace_s_per_500m, watts}`) and
   `watts` (series like `hr.series`).
 
+## metrics.jsonl
+
+Path: `data/derived/metrics.jsonl`. Whitelisted daily health metrics
+(`resting_heart_rate`, `vo2_max`, `heart_rate_variability`) upserted from
+Health Auto Export files by `parse_auto_export.py` — one line per (date,
+metric), merged so points survive after old raw exports are deleted:
+
+```json
+{"date":"2026-08-11","name":"resting_heart_rate","value":52.0,"units":"count/min"}
+```
+
+Recovery signals for reviews (resting-HR / HRV spikes) and estimation inputs
+(Apple's VO2max) live here.
+
 ## Photo extraction sidecar
 
 Path: `data/derived/photos/<photo stem>.yaml`. EXIF fields are written by

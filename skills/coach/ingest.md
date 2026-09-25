@@ -3,6 +3,28 @@
 Outcome: all new raw data normalized, photos extracted, auto-merges applied,
 index rebuilt, and the athlete told what needs review.
 
+## 0. Find new monitor photos (macOS, Apple Photos)
+
+Parse Health exports first so the finder can use workout end times, then scan:
+
+```
+"$PY" "$ENGINE/scripts/parse_auto_export.py"
+"$PY" "$ENGINE/scripts/find_monitor_photos.py"          # add --dry-run to preview
+```
+
+It OCRs photos since the last scan and stages likely console photos in
+`data/inbox/photos/` (GPS already stripped). Look at every staged photo:
+a machine console → `--promote UUID ...` (moves it into `data/raw/photos/`);
+anything else → `--reject UUID ...` (deleted, never staged again). Never
+promote a photo showing people, faces, or identifiable places — ask the
+athlete instead. Mention any near-misses it lists; the athlete can add real
+ones to the override album (default "Autotrainer") and re-run.
+
+If it fails to open the library, the app running it needs Full Disk Access
+(System Settings → Privacy & Security) — the athlete grants that, not you.
+Skip this step on non-Mac setups; photos can always be dropped into
+`data/raw/photos/` by hand.
+
 ## 1. Deterministic pass
 
 ```

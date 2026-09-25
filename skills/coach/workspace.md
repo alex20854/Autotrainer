@@ -10,11 +10,13 @@ remembering across sessions must be written to a file in it.
 | Workspace path | What | Who writes it |
 |---|---|---|
 | `config/athlete.yaml` | zone anchors, equipment, matching config | you (`setup`, reviews) |
+| `data/inbox/photos/` | photo-finder candidates awaiting your review (gitignored) | `find_monitor_photos.py` |
 | `data/raw/` | immutable inputs (photos, exports); health/ is gitignored | never modified, only added |
 | `data/derived/workouts/` | normalized per-workout JSON incl. HR series | parser scripts |
 | `data/derived/photos/` | photo-extraction sidecars | prep script (EXIF) + you (vision) |
 | `data/sessions/` | canonical session files | `apply_merges.py` (auto) + you (ambiguous) |
 | `data/index.jsonl` | generated whole-history index | `build_index.py` only |
+| `data/derived/photo_finder.json` | finder state: last scan, promoted/rejected photo UUIDs | `find_monitor_photos.py` only |
 | `data/baseline.jsonl` | generated weekly rollup of unstructured movement | `build_baseline.py` only |
 | `plans/`, `reports/` | weekly plans and reviews | you |
 | `goals.md`, `benchmarks.md` | goal state, dated test results | you |

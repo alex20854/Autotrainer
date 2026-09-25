@@ -56,6 +56,13 @@ classification:
     - HKWorkoutActivityTypeHiking
   promote_min_duration_s: 1800
 
+# Apple Photos monitor-photo finder (find_monitor_photos.py). All optional —
+# engine defaults apply; add consoles the OCR vocabulary doesn't know yet.
+photo_finder:
+  album: Autotrainer        # photos in this album are always staged
+  extra_brands: []          # e.g. [Keiser]
+  extra_terms: []
+
 # Reconciliation settings (spec §7).
 matching:
   photo_window_after_end_s: 600     # EXIF must fall in [start, end + 10 min]

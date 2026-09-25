@@ -6,6 +6,9 @@ data/raw/health/*
 # Converted photo copies are regenerable from data/raw/photos/ via prep_photos.py
 data/derived/photos_converted/
 
+# Photo-finder staging area: unreviewed candidates never enter git history
+data/inbox/
+
 # Reconciliation proposals are regenerated on every ingest
 data/derived/proposals.json
 

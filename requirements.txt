@@ -2,3 +2,4 @@ PyYAML>=6.0
 Pillow>=10.0
 pillow-heif>=0.16
 pytest>=8.0
+osxphotos>=0.77; sys_platform == "darwin"   # find_monitor_photos.py (Apple Photos + Vision OCR)

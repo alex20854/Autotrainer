@@ -48,7 +48,7 @@ lives in a separate **workspace** repo.
 
 | Drop | Where | Notes |
 |---|---|---|
-| Monitor photos | `data/raw/photos/` | after every machine session; EXIF time is the matching key |
+| Monitor photos | `data/raw/photos/` | after every machine session; EXIF time is the matching key. On a Mac, `/coach ingest` can find them in Apple Photos for you (`find_monitor_photos.py`: OCR + workout timing) |
 | Health Auto Export JSON | `data/raw/health/` | ingest is idempotent — drop exports whenever |
 | Apple Health `export.xml` | `data/raw/health/` | backfill; gitignored (huge), parsed into committed derived records |
 | C2 Logbook CSV | `data/raw/c2/` | opportunistic |

@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 from datetime import datetime, timezone
 
 import pytest
@@ -107,3 +108,105 @@ def test_real_monitor_photos_score_as_matches():
         lines = [t for t, c in detect_text(str(photo)) if c >= fmp.DEFAULTS["ocr_confidence"]]
         score, hits = fmp.score_text(lines)
         assert score >= fmp.DEFAULTS["min_score"], (photo.name, hits)
+
+
+# ---------------------------------------------------------------- read-only guarantees
+
+def test_guard_allows_only_finder_paths(ws):
+    assert fmp._guard_write(ws / "inbox" / "A.heic")
+    assert fmp._guard_write(ws / "raw" / "A.heic")
+    assert fmp._guard_write(ws / "state.json")
+    for bad in (ws / "elsewhere.jpeg", ws / "inbox" / "sub" / "A.heic", ws.parent / "A.heic"):
+        with pytest.raises(fmp.UnsafeWrite):
+            fmp._guard_write(bad)
+
+
+def test_guard_refuses_photos_library(ws, monkeypatch):
+    lib = ws / "Photos Library.photoslibrary" / "originals"
+    lib.mkdir(parents=True)
+    monkeypatch.setattr(fmp, "INBOX_DIR", lib)   # even if misconfigured to point there
+    with pytest.raises(fmp.UnsafeWrite, match="Photos library"):
+        fmp._guard_write(lib / "A.heic")
+
+
+def test_guard_refuses_hard_links_and_symlinks(ws, tmp_path):
+    original = tmp_path / "library-original.heic"
+    original.write_bytes(b"original")
+    import os
+    os.link(original, ws / "inbox" / "LINKED.heic")
+    with pytest.raises(fmp.UnsafeWrite, match="hard-linked"):
+        fmp._guard_write(ws / "inbox" / "LINKED.heic")
+    (ws / "inbox" / "SYM.heic").symlink_to(original)
+    with pytest.raises(fmp.UnsafeWrite):
+        fmp._guard_write(ws / "inbox" / "SYM.heic")
+    # reject must not delete through a link either; the original survives
+    with pytest.raises(fmp.UnsafeWrite):
+        fmp.reject(["LINKED"])
+    assert original.read_bytes() == b"original"
+
+
+class FakePhoto:
+    uuid, original_filename, path = "AAAA", "IMG_1.HEIC", "/lib/originals/A/AAAA.heic"
+
+    def __init__(self, write_to=None):
+        self.calls, self.write_to = [], write_to
+
+    def export(self, dest, **kw):
+        self.calls.append(kw)
+        out = Path(self.write_to or Path(dest) / kw["filename"])
+        out.write_bytes(b"copy")
+        return [str(out)]
+
+
+def test_export_is_an_independent_copy(ws):
+    photo = FakePhoto()
+    path = fmp.export_original(photo, fmp.INBOX_DIR, download=False)
+    assert path.parent == (ws / "inbox").resolve()
+    [kw] = photo.calls
+    assert kw["export_as_hardlink"] is False and kw["edited"] is False
+    assert path.stat().st_nlink == 1
+
+
+def test_export_landing_outside_inbox_is_refused(ws):
+    photo = FakePhoto(write_to=ws / "surprise.heic")
+    with pytest.raises(fmp.UnsafeWrite):
+        fmp.export_original(photo, fmp.INBOX_DIR, download=False)
+
+
+def test_promote_never_overwrites_raw(ws):
+    (ws / "raw" / "AAAA.heic").write_bytes(b"raw")
+    (ws / "inbox" / "AAAA.heic").write_bytes(b"new")
+    with pytest.raises(SystemExit):
+        fmp.promote(["AAAA"])
+    assert (ws / "raw" / "AAAA.heic").read_bytes() == b"raw"
+
+
+# Pin the Apple Photos surface: only these read-only osxphotos members may be
+# used. Adding anything here is a deliberate, reviewed change.
+ALLOWED_PHOTO_ATTRS = {"uuid", "date", "path", "path_derivatives", "original_filename",
+                       "intrash", "export"}
+ALLOWED_DB_ATTRS = {"photos", "albums"}
+ALLOWED_OSXPHOTOS = {"PhotosDB", "text_detection", "detect_text"}
+
+
+def test_only_read_only_photos_api_is_used():
+    import ast
+    tree = ast.parse(Path(fmp.__file__).read_text())
+    photo_attrs, db_attrs, osx_attrs, imports = set(), set(), set(), set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
+            owner = node.value.id
+            if owner in {"photo", "p"} and node.attr not in {"name", "parent", "stem", "suffix"}:
+                photo_attrs.add(node.attr)
+            elif owner == "db":
+                db_attrs.add(node.attr)
+            elif owner == "osxphotos":
+                osx_attrs.add(node.attr)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            mod = getattr(node, "module", None) or ""
+            imports |= {mod} | {a.name for a in node.names}
+    assert photo_attrs <= ALLOWED_PHOTO_ATTRS, photo_attrs - ALLOWED_PHOTO_ATTRS
+    assert db_attrs <= ALLOWED_DB_ATTRS, db_attrs - ALLOWED_DB_ATTRS
+    assert osx_attrs <= ALLOWED_OSXPHOTOS, osx_attrs - ALLOWED_OSXPHOTOS
+    # photoscript / PhotoKit are osxphotos' write paths into the library
+    assert not any("photoscript" in i or "photokit" in i.lower() for i in imports), imports

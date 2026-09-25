@@ -13,6 +13,19 @@ Nothing reaches data/raw/ until Claude has looked at it during /coach ingest:
   --promote UUID...  move staged photos into data/raw/photos/ (monitor photos)
   --reject UUID...   delete staged photos, never stage them again (false hits)
 
+READ-ONLY toward Apple Photos, by construction:
+  - The library is only read: osxphotos queries a temporary copy of its
+    database, and this script uses nothing but the read-only calls pinned by
+    tests/test_find_monitor_photos.py (no albums/keywords/edits/deletes).
+  - Originals are exported as independent copies (never hard links), so
+    stripping EXIF from a staged copy cannot touch the library original.
+  - Every file this script writes, moves, or deletes passes _guard_write():
+    it must live in this workspace's inbox, raw photos dir, or state file,
+    never inside a *.photoslibrary, and never be hard-linked elsewhere.
+  Side effect to know about: for a match whose original is only in iCloud,
+  Photos is asked to export it, which makes Photos download that original
+  (as viewing it would). --no-download avoids even that.
+
 Deterministic: scoring is plain keyword arithmetic; the judgment call (is this
 really a monitor?) is Claude's. State lives in data/derived/photo_finder.json.
 
@@ -137,6 +150,32 @@ def score_photo(lines: list[str], taken: datetime, ends: list[datetime],
     return score, hits
 
 
+# ------------------------------------------------------------------- write guard
+
+class UnsafeWrite(RuntimeError):
+    pass
+
+
+def _guard_write(path: Path) -> Path:
+    """Refuse any write/move/delete outside the workspace's finder paths.
+
+    Allowed: files inside INBOX_DIR or PHOTOS_DIR, and STATE_PATH itself.
+    Refused: anything inside a Photos library bundle, anything elsewhere, and
+    any existing file with other hard links (it could be a library original).
+    """
+    resolved = Path(path).resolve()
+    if any(part.endswith(".photoslibrary") for part in resolved.parts):
+        raise UnsafeWrite(f"refusing to modify the Photos library: {resolved}")
+    allowed_dirs = (INBOX_DIR.resolve(), PHOTOS_DIR.resolve())
+    if resolved != STATE_PATH.resolve() and not any(resolved.parent == d for d in allowed_dirs):
+        raise UnsafeWrite(f"refusing to write outside the finder's workspace paths: {resolved}")
+    if resolved.is_symlink() or Path(path).is_symlink():
+        raise UnsafeWrite(f"refusing to modify a symlink: {path}")
+    if resolved.exists() and resolved.stat().st_nlink > 1:
+        raise UnsafeWrite(f"refusing to modify a hard-linked file: {resolved}")
+    return resolved
+
+
 # ------------------------------------------------------------------- state
 
 def load_state() -> dict:
@@ -146,6 +185,7 @@ def load_state() -> dict:
 
 
 def save_state(state: dict) -> None:
+    _guard_write(STATE_PATH)
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
     state["promoted"], state["rejected"] = sorted(set(state["promoted"])), sorted(set(state["rejected"]))
     STATE_PATH.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
@@ -177,7 +217,11 @@ def promote(uuids: list[str]) -> int:
     state = load_state()
     PHOTOS_DIR.mkdir(parents=True, exist_ok=True)
     for p in staged(uuids):
-        shutil.move(str(p), PHOTOS_DIR / p.name)
+        dest = PHOTOS_DIR / p.name
+        _guard_write(p), _guard_write(dest)
+        if dest.exists():
+            sys.exit(f"{dest} already exists; not overwriting raw data")
+        shutil.move(str(p), dest)
         state["promoted"].append(uuid_of(p))
         print(f"promoted {p.name} -> data/raw/photos/")
     save_state(state)
@@ -187,7 +231,7 @@ def promote(uuids: list[str]) -> int:
 def reject(uuids: list[str]) -> int:
     state = load_state()
     for p in staged(uuids):
-        p.unlink()
+        _guard_write(p).unlink()
         state["rejected"].append(uuid_of(p))
         print(f"rejected {p.name} (deleted; will not be staged again)")
     save_state(state)
@@ -209,16 +253,23 @@ def ocr_lines(photo, min_conf: float) -> list[str]:
 
 
 def export_original(photo, dest: Path, download: bool) -> Path | None:
-    dest.mkdir(parents=True, exist_ok=True)
     ext = Path(photo.original_filename).suffix.lower() or ".jpeg"
     name = f"{photo.uuid}{ext}"
+    _guard_write(dest / name)
+    dest.mkdir(parents=True, exist_ok=True)
+    # Copy semantics only: export_as_hardlink=False keeps the staged file
+    # independent of the library original; edited/live/raw variants are off.
+    common = dict(filename=name, overwrite=True, export_as_hardlink=False,
+                  edited=False, live_photo=False, raw_photo=False)
     if photo.path:
-        out = photo.export(str(dest), filename=name, overwrite=True)
+        out = photo.export(str(dest), **common)
     elif download:
-        out = photo.export(str(dest), filename=name, overwrite=True, use_photos_export=True)
+        out = photo.export(str(dest), use_photos_export=True, **common)
     else:
         return None
-    return Path(out[0]) if out else None
+    if not out:
+        return None
+    return _guard_write(Path(out[0]))   # re-check what export actually wrote
 
 
 def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download: bool) -> int:
@@ -268,13 +319,15 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
             continue
         try:
             path = export_original(photo, INBOX_DIR, download)
+        except UnsafeWrite:
+            raise   # a safety violation stops the run; never logged-and-continued
         except Exception as e:
             path = None
             print(f"{line}  EXPORT FAILED: {e}", file=sys.stderr)
         if path is None:
             not_local += 1
             continue
-        strip_photo(path)
+        strip_photo(_guard_write(path))
         print(f"{line}  -> data/inbox/photos/{path.name}")
     for photo, score, hits in near_misses:
         print(f"  near-miss {photo.uuid}  {photo.date:%Y-%m-%d %H:%M}  score {score}  "

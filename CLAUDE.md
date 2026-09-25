@@ -45,6 +45,11 @@ strict:
 4. **Tests.** `python3 -m pytest tests/` — integration tests run against
    `$AUTOTRAINER_WORKSPACE` or `../Autotrainer_Alex` and skip if neither exists.
    They read the workspace; they must never write to it.
+5. **Apple Photos is read-only.** `find_monitor_photos.py` may only read the
+   library and export independent copies; every write goes through its
+   `_guard_write()`. The allowlist test pinning its osxphotos calls may only be
+   widened for read-only members, deliberately. Never use photoscript/PhotoKit
+   write paths (albums, keywords, edits, deletes).
 
 ## Privacy — this repo is PUBLIC
 

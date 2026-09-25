@@ -6,7 +6,7 @@ index rebuilt, and the athlete told what needs review.
 ## 1. Deterministic pass
 
 ```
-python3 scripts/ingest.py
+"$PY" "$ENGINE/scripts/ingest.py"
 ```
 
 Runs parsers → prep_photos → proposals → auto-merges → metrics → index.
@@ -17,13 +17,14 @@ Read the step outputs; note counts.
 For every pending sidecar (`extracted: false` in `data/derived/photos/*.yaml`):
 
 1. Read the photo (`converted` path if set, else `photo`).
-2. Consult `knowledge/machines.md` for the console layout if known.
+2. Consult `$ENGINE/knowledge/machines.md` for the console layout if known.
 3. Fill the sidecar: `machine` + `machine_confidence`, `fields` with per-field
    `{value, confidence}` for whatever the console shows (elapsed_time_s,
    distance_m, watts_avg, kcal, pace, splits...), `extracted: true`, `notes`
    for anything odd. Units: convert to schema units (seconds, meters, kcal).
 4. If the console layout is new or you got something wrong before, add/refine
-   the `knowledge/machines.md` entry, including this photo as an example.
+   the `$ENGINE/knowledge/machines.md` entry (engine knowledge: describe the
+   console generically, never the athlete or their gym), including this photo as an example.
 5. Not a monitor photo at all? `extracted: true`, `machine: null`, note why —
    it will surface as an orphan for review and can be ignored there.
 
@@ -34,8 +35,8 @@ legibility.
 ## 3. Re-reconcile
 
 ```
-python3 scripts/propose_matches.py && python3 scripts/apply_merges.py && \
-python3 scripts/compute_metrics.py && python3 scripts/build_index.py
+for s in propose_matches apply_merges compute_metrics build_index; do
+  "$PY" "$ENGINE/scripts/$s.py" || break; done
 ```
 
 (The extractions may enable new pairings.)
@@ -46,13 +47,14 @@ Ingest already re-rendered `dashboard.html`. If this session has the Artifact
 tool, also refresh the hosted copy (same URL every time):
 
 ```
-python3 scripts/build_dashboard.py --artifact /tmp/cardio-coach.html
+"$PY" "$ENGINE/scripts/build_dashboard.py" --artifact <scratch>/cardio-coach.html
 ```
 
-then publish that file with `url:
-https://claude.ai/code/artifact/6f62fc9e-af13-4c78-8b0c-3a231c7930f0`
-(favicon 🚴). Sessions without the Artifact tool skip this — the committed
-`dashboard.html` is always current regardless.
+then publish that file to the hosted-dashboard URL recorded in the workspace
+`CLAUDE.md`. No URL recorded yet → publish a new artifact and record its URL
+there so every later ingest updates the same page. Sessions without the
+Artifact tool skip this — the committed `dashboard.html` is always current
+regardless.
 
 ## 5. Report
 

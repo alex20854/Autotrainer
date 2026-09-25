@@ -35,7 +35,18 @@ from pathlib import Path
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib import workspace
+
+
+def _git_toplevel() -> Path:
+    """The repo being guarded: engine or workspace, whichever we're inside."""
+    out = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                         capture_output=True, text=True).stdout.strip()
+    return Path(out) if out else workspace.root()
+
+
+REPO_ROOT = _git_toplevel()
 PHOTOS_DIR = REPO_ROOT / "data" / "raw" / "photos"
 LOCAL_CONFIG = REPO_ROOT / "config" / "privacy.local.yaml"
 
@@ -163,7 +174,8 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.strip_gps:
-        stripped = [p for p in sorted(PHOTOS_DIR.iterdir())
+        photos = sorted(PHOTOS_DIR.iterdir()) if PHOTOS_DIR.is_dir() else []
+        stripped = [p for p in photos
                     if p.suffix.lower() in PHOTO_EXTS and strip_photo(p)]
         print(f"stripped EXIF from {len(stripped)} photo(s)")
         for p in stripped:
@@ -184,7 +196,7 @@ def main() -> int:
     findings.extend(check_git_identity())
 
     if findings:
-        print("PRIVACY CHECK FAILED — this repo is public:", file=sys.stderr)
+        print("PRIVACY CHECK FAILED:", file=sys.stderr)
         for f in findings:
             print(f"  {f}", file=sys.stderr)
         print("\nFix the finding (photos: scripts/privacy_check.py --strip-gps), or\n"

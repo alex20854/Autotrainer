@@ -1,0 +1,78 @@
+# Athlete configuration — the machine-readable contract for zones and matching.
+# Updated by /coach setup and after benchmark retests (benchmarks.md is the
+# dated human-readable log these values come from). Scripts read this file;
+# they never write it.
+
+athlete:
+  # Filled in by /coach setup. Formula-derived values are BOOTSTRAP ONLY and
+  # must be flagged as such until a field test replaces them (spec §11).
+  hr_max: null              # bpm; from observed max or field test, not 220-age
+  hr_resting: null          # bpm
+  # For the dashboard comparison section + VO2max estimate (mild
+  # quasi-identifiers if your workspace repo is public; leave null to omit):
+  age: null
+  sex: null
+  weight_kg: null
+  lthr: null                # bpm; lactate threshold HR from a field test
+  maf_cap: null             # bpm; 180-age adjusted, if MAF-style base is used
+  timezone: "America/New_York"   # EXIF timestamps are interpreted in this zone
+
+# Zone model: 5 HR zones as % of LTHR (Friel-style). When lthr is null the
+# scripts fall back to % of hr_max (z2 = 60-70% etc.) and mark computed
+# metrics with zones_source: bootstrap.
+zones:
+  model: pct_lthr
+  bands:            # [low, high] as fraction of LTHR, upper bound exclusive
+    z1: [0.00, 0.85]
+    z2: [0.85, 0.89]
+    z3: [0.90, 0.94]
+    z4: [0.95, 0.99]
+    z5: [1.00, 9.99]
+
+# Per-modality power anchors (watts). ftp drives threshold/sweet-spot targets;
+# z2_watts_ceiling cross-checks that "easy" sessions were actually easy.
+power:
+  bikeerg:  {ftp: null, z2_watts_ceiling: null}
+  rowerg:   {ftp: null, z2_watts_ceiling: null}
+  skierg:   {ftp: null, z2_watts_ceiling: null}
+
+# Equipment the athlete actually uses; /coach plan should not prescribe
+# machines that aren't listed here.
+equipment: []     # e.g. concept2-rowerg, concept2-bikeerg, airdyne, treadmill (ids from knowledge/machines.md)
+
+# Activity classification: training sessions vs baseline activity.
+# Baseline-type records (Apple Watch auto-detected walks etc.) go to the
+# weekly rollup (data/baseline.jsonl) instead of the session ledger, UNLESS
+# marked deliberate: duration >= promote_min_duration_s, or a monitor photo
+# pairs with them. Nothing is discarded — the rollup counts everything routed
+# away from sessions. /coach review tunes these values like the modality_map.
+classification:
+  baseline_types:
+    - Walking
+    - Outdoor Walk
+    - Indoor Walk
+    - Hiking
+    - HKWorkoutActivityTypeWalking
+    - HKWorkoutActivityTypeHiking
+  promote_min_duration_s: 1800
+
+# Reconciliation settings (spec §7).
+matching:
+  photo_window_after_end_s: 600     # EXIF must fall in [start, end + 10 min]
+  duration_tolerance_s: 90          # |monitor - Health| cross-check
+  # Records /coach review deliberately keeps OUT of the session ledger
+  # (benchmark probes, accidental recordings). Still in derived records and
+  # citable from benchmarks.md; just never proposed as sessions again.
+  ignore_records: []
+  # Learned mapping: monitor/console machine -> plausible Apple Health workout
+  # types. Lookup failures LOWER confidence, never hard-fail (spec §7).
+  # /coach review appends new pairings here as they are learned.
+  modality_map:
+    concept2-rowerg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeOther]
+    concept2-skierg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
+    concept2-bikeerg:  [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeOther]
+    airdyne:           [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther, Elliptical]
+    stairclimber:      [HKWorkoutActivityTypeStairClimbing, HKWorkoutActivityTypeStairs, HKWorkoutActivityTypeOther]
+    versaclimber:      [HKWorkoutActivityTypeClimbing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
+    exercise-bike:     [HKWorkoutActivityTypeCycling]
+    treadmill:         [HKWorkoutActivityTypeRunning, HKWorkoutActivityTypeWalking]

@@ -12,7 +12,9 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+from . import workspace
+
+REPO_ROOT = workspace.root()
 WORKOUTS_DIR = REPO_ROOT / "data" / "derived" / "workouts"
 
 FIELDS = [

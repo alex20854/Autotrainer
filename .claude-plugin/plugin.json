@@ -1,0 +1,7 @@
+{
+  "name": "autotrainer",
+  "version": "0.1.0",
+  "description": "Claude cardio coach: /coach setup|ingest|plan|review|ask over a flat-file training workspace (Apple Health, monitor photos, Concept2), with evidence-graded coaching knowledge and a self-contained dashboard.",
+  "author": {"name": "alex20854"},
+  "repository": "https://github.com/alex20854/Autotrainer"
+}

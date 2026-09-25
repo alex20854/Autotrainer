@@ -1,8 +1,11 @@
 #!/bin/sh
-# Blocks commits containing location/identity leaks (public repo).
-# Install once per clone:  git config core.hooksPath scripts/githooks
+# Blocks commits containing location/identity leaks. Works for the engine repo
+# and for any workspace repo (checks whichever repo is committing).
+# Install once per clone:
+#   engine:     git config core.hooksPath scripts/githooks
+#   workspace:  git config core.hooksPath <engine>/scripts/githooks
 # Deliberate override after human review:  git commit --no-verify
-ROOT="$(git rev-parse --show-toplevel)"
-PY="$ROOT/.venv/bin/python"
+ENGINE="$(cd "$(dirname "$0")/../.." && pwd -P)"
+PY="$ENGINE/.venv/bin/python"
 [ -x "$PY" ] || PY=python3
-exec "$PY" "$ROOT/scripts/privacy_check.py" --staged
+exec "$PY" "$ENGINE/scripts/privacy_check.py" --staged

@@ -23,8 +23,9 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import frontmatter, records
+from lib import workspace
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = workspace.root()
 SESSIONS_DIR = REPO_ROOT / "data" / "sessions"
 CONFIG_PATH = REPO_ROOT / "config" / "athlete.yaml"
 

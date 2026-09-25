@@ -10,7 +10,7 @@ evidence base — not generic fitness content.
    `data/baseline.jsonl` for "how much am I moving overall" — unstructured
    walks/movement live there, not in the session ledger.
 2. Specific session files only when the question is about specific days.
-3. `knowledge/styles/*.md` + `knowledge/evidence.md` — claims and grades.
+3. `$ENGINE/knowledge/styles/*.md` + `$ENGINE/knowledge/evidence.md` — claims and grades.
 4. `goals.md`, current plan, latest report — context for "should I...".
 
 ## Rules

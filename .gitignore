@@ -1,16 +1,13 @@
-# Raw Apple Health exports can exceed GitHub's 100 MB file limit — keep them local only.
-# Everything derived from them (data/derived/workouts/) IS committed as the durable form.
-data/raw/health/*
-!data/raw/health/.gitkeep
-
-# Converted photo copies are regenerable from data/raw/photos/ via scripts/prep_photos.py
-data/derived/photos_converted/
-
-# Reconciliation proposals are regenerated on every ingest
-data/derived/proposals.json
-
-# Personal strings the privacy check greps for — local only, never committed
-config/privacy.local.yaml
+# This is the ENGINE repo — athlete data lives in a separate workspace repo
+# (see templates/workspace/). Guard against personal files landing here.
+/data/
+/config/athlete.yaml
+/config/privacy.local.yaml
+/goals.md
+/benchmarks.md
+/plans/
+/reports/
+/dashboard.html
 
 __pycache__/
 *.pyc

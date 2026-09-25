@@ -1,6 +1,6 @@
 # /coach plan — Next Week's Prescriptions
 
-Outcome: `plans/YYYY-Www.md` (schema in `docs/schema.md`) with prescriptions
+Outcome: `plans/YYYY-Www.md` (schema in `$ENGINE/docs/schema.md`) with prescriptions
 the athlete can execute and the system can verify.
 
 ## Inputs (read in this order)
@@ -12,11 +12,11 @@ the athlete can execute and the system can verify.
    (efficiency factor, decoupling, interval watts).
 4. Last `reports/` review (if any) — its next-week adjustment is your starting
    point.
-5. `knowledge/styles/*.md` for the track's methods.
+5. `$ENGINE/knowledge/styles/*.md` for the track's methods.
 
 ## Composition rules
 
-- Polarized skeleton by default (see `knowledge/styles/polarized.md`): the 80%
+- Polarized skeleton by default (see `$ENGINE/knowledge/styles/polarized.md`): the 80%
   easy / 20% hard split, sized to the athlete's realistic weekly slots.
 - **Prefer lower verification tiers unless the goal demands otherwise**
   (spec §8): single-machine steady state and erg intervals before mixed-modal.

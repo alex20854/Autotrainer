@@ -1,0 +1,11 @@
+{
+  "name": "autotrainer",
+  "owner": {"name": "alex20854"},
+  "plugins": [
+    {
+      "name": "autotrainer",
+      "source": "./",
+      "description": "Claude cardio coach engine: /coach skill, ingest scripts, coaching knowledge base, dashboard."
+    }
+  ]
+}

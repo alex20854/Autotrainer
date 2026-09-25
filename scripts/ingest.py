@@ -17,16 +17,20 @@ Everything is idempotent — safe to re-run any time new raw files appear.
 After this, Claude's judgment work remains: vision-extract pending photos
 (then re-run from step 5), and resolve ambiguous cases during /coach review.
 
-Usage: python3 scripts/ingest.py
+Usage (from inside a workspace, or with AUTOTRAINER_WORKSPACE set):
+  python3 <engine>/scripts/ingest.py
 """
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 SCRIPTS = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPTS))
+from lib import workspace
 
 STEPS = [
     "parse_health_export.py",
@@ -43,8 +47,12 @@ STEPS = [
 
 
 def main() -> int:
+    ws = workspace.root()
+    workspace.require(ws)
+    # Pin the workspace so every step resolves the same one, whatever its cwd.
+    env = {**os.environ, "AUTOTRAINER_WORKSPACE": str(ws)}
     for step in STEPS:
-        result = subprocess.run([sys.executable, str(SCRIPTS / step)])
+        result = subprocess.run([sys.executable, str(SCRIPTS / step)], env=env, cwd=ws)
         if result.returncode != 0:
             print(f"ingest: {step} failed (exit {result.returncode})", file=sys.stderr)
             return result.returncode

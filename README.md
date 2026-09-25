@@ -1,65 +1,80 @@
 # Autotrainer — Claude Cardio Coach
 
-Claude *is* the engine: this repo is the durable memory of a cardio coaching
-system — flat files, a handful of deterministic scripts, and Claude Code
-skills for everything requiring judgment. Full design: `cardio-coach-spec.md`.
+A cardio coach that runs inside Claude Code. Claude does the judgment work
+(reading monitor photos, programming, compliance scoring, weekly reviews);
+a handful of deterministic scripts do the parsing and math; your training
+history lives in plain files in a git repo you own. Full design:
+`cardio-coach-spec.md`.
 
-## Using it
+This repo is the **engine** — reusable, with no athlete data. Your training
+lives in a separate **workspace** repo.
 
-Talk to the coach in Claude Code:
+## Getting started
+
+1. Get the engine and its Python dependencies (macOS Homebrew Python blocks
+   global installs, so use the venv):
+
+   ```
+   git clone https://github.com/alex20854/Autotrainer.git
+   cd Autotrainer
+   python3 -m venv .venv
+   .venv/bin/python -m pip install -r requirements.txt
+   ```
+
+2. Make the `/coach` skill available. Either install the plugin
+   (`/plugin marketplace add <path-or-github-repo>` then
+   `/plugin install autotrainer@autotrainer`), or — for engine development —
+   symlink it into your workspace:
+   `ln -s <engine>/skills/coach <workspace>/.claude/skills/coach`.
+   The skill finds the engine's scripts and venv by resolving its own path,
+   so keep the engine checkout (with `.venv`) in place.
+
+3. Create a workspace: in a new empty directory, run `/coach setup`. It
+   scaffolds from `templates/workspace/`, wires the privacy hook, and does the
+   goal/zone intake. Keep the workspace private unless you want your training
+   public.
+
+## Using it (from your workspace)
 
 ```
-/coach setup    # first run: goal intake, zones, expectations
+/coach setup    # first run: scaffold, goal intake, zones, expectations
 /coach ingest   # after adding data: parse, extract photos, reconcile
 /coach plan     # write next week's prescriptions
 /coach review   # weekly: compliance scores, trends, adjustments
 /coach ask      # anything, grounded in your ledger
 ```
 
-## Feeding it data
+## Feeding it data (workspace paths)
 
 | Drop | Where | Notes |
 |---|---|---|
 | Monitor photos | `data/raw/photos/` | after every machine session; EXIF time is the matching key |
-| Health Auto Export JSON | `data/raw/health/` | iCloud folder sync; arrives when it arrives — ingest is idempotent |
+| Health Auto Export JSON | `data/raw/health/` | ingest is idempotent — drop exports whenever |
 | Apple Health `export.xml` | `data/raw/health/` | backfill; gitignored (huge), parsed into committed derived records |
-| C2 Logbook CSV | `data/raw/c2/` | opportunistic, when sync worked |
+| C2 Logbook CSV | `data/raw/c2/` | opportunistic |
 
-Then `/coach ingest`.
+**Dashboard:** every ingest re-renders `dashboard.html` in the workspace — a
+single self-contained file, no server. `/coach ingest` can also keep a hosted
+copy as a private claude.ai artifact.
 
-**Dashboard:** every ingest re-renders `dashboard.html` — a single
-self-contained file (no server, no dependencies). Open it in any browser.
-A hosted copy lives as a private claude.ai artifact (URL in
-`.claude/skills/coach/ingest.md`), refreshed by `/coach ingest` whenever the
-session can publish artifacts.
+## What's in the engine
 
-## Layout
+- `skills/coach/` — the skill and its playbooks
+- `scripts/` — parsers, reconciliation, metrics, index, dashboard
+- `knowledge/` — evidence-graded training methods (`styles/`), research
+  dossier, machine console guide, VO2max reference values
+- `docs/schema.md` — the data contract
+- `templates/workspace/` — new-workspace skeleton
 
-`CLAUDE.md` is the operating manual (file map, rules). `docs/schema.md` is the
-data contract. `config/athlete.yaml` holds zone anchors. Sessions live in
-`data/sessions/`, the generated index in `data/index.jsonl`, plans and weekly
-reviews in `plans/` and `reports/`, the evidence-graded coaching knowledge
-base in `knowledge/`.
-
-## One-time setup per clone
-
-Paste as-is (macOS Homebrew Python blocks global installs, so use the venv):
+## Development
 
 ```
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install -r requirements.txt
-git config core.hooksPath scripts/githooks
-cp config/privacy.local.yaml.example config/privacy.local.yaml
 python3 -m pytest tests/
+git config core.hooksPath scripts/githooks
+cp config/privacy.local.yaml.example config/privacy.local.yaml   # then add your personal strings
 ```
 
-Then edit `config/privacy.local.yaml` with your real personal strings.
-New terminals need `source .venv/bin/activate` before running scripts (the
-pre-commit hook finds `.venv` on its own).
-
-## Privacy (public repo)
-
-The pre-commit hook installed above blocks commits containing GPS/owner EXIF,
-addresses, phone numbers, personal emails, or your listed personal strings.
-Details in `CLAUDE.md`.
+Integration tests run against `$AUTOTRAINER_WORKSPACE` (or a sibling
+`../Autotrainer_Alex`) and skip when none is present. The pre-commit hook
+blocks GPS/owner EXIF, addresses, phone numbers, personal emails, and your
+listed personal strings — in this repo and in workspaces that use it.

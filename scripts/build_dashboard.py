@@ -22,8 +22,9 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import frontmatter, records
+from lib import workspace
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = workspace.root()
 OUT_PATH = REPO_ROOT / "dashboard.html"
 
 # palette: dataviz reference instance (light / dark)
@@ -215,7 +216,7 @@ def stacked_bar_chart(rows, series, colors, *, w=470, h=200, unit="min"):
 
 def comparison_section(config) -> str:
     """VO2max dot plot: the athlete vs reference points, one shared axis."""
-    ref_path = REPO_ROOT / "knowledge" / "reference-values.yaml"
+    ref_path = workspace.ENGINE_ROOT / "knowledge" / "reference-values.yaml"
     if not ref_path.exists():
         return ""
     refs = yaml.safe_load(ref_path.read_text())

@@ -23,12 +23,15 @@ import sys
 from pathlib import Path
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib import workspace
 from PIL import Image, ExifTags
 import pillow_heif
 
 pillow_heif.register_heif_opener()
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = workspace.root()
 PHOTOS_DIR = REPO_ROOT / "data" / "raw" / "photos"
 SIDECAR_DIR = REPO_ROOT / "data" / "derived" / "photos"
 CONVERTED_DIR = REPO_ROOT / "data" / "derived" / "photos_converted"

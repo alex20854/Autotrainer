@@ -4,7 +4,7 @@ files or photos."""
 
 import re
 
-from conftest import REPO_ROOT
+from conftest import REPO_ROOT, WORKSPACE, requires_workspace
 
 import privacy_check as pc
 
@@ -51,10 +51,11 @@ def test_text_check_flags_and_passes(tmp_path):
     assert pc.check_text(clean, personal=[]) == []
 
 
-def test_repo_photos_have_no_gps_or_owner_exif():
-    photos = [p for p in pc.PHOTOS_DIR.iterdir()
+@requires_workspace
+def test_workspace_photos_have_no_gps_or_owner_exif():
+    photos = [p for p in (WORKSPACE / "data" / "raw" / "photos").iterdir()
               if p.suffix.lower() in pc.PHOTO_EXTS]
-    assert photos, "expected photos in data/raw/photos"
+    assert photos, "expected photos in the workspace's data/raw/photos"
     for photo in photos:
         assert pc.check_photo(photo) == [], f"identifying EXIF in {photo.name}"
 

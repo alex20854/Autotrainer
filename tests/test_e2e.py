@@ -16,7 +16,7 @@ import parse_auto_export
 import parse_c2
 import parse_health_export
 import propose_matches as pm
-from conftest import FIXTURES, REPO_ROOT
+from conftest import FIXTURES, TEMPLATE_WORKSPACE
 from lib import records
 
 
@@ -47,8 +47,8 @@ def test_full_ingest_flow(tmp_path, monkeypatch):
         "fields": {"elapsed_time_s": {"value": 1500}},
     }))
 
-    # 3. proposals, using the repo's real matching config
-    config = yaml.safe_load((REPO_ROOT / "config" / "athlete.yaml").read_text())
+    # 3. proposals, using the shipped default matching config
+    config = yaml.safe_load((TEMPLATE_WORKSPACE / "config" / "athlete.yaml").read_text())
     proposals = pm.propose(workouts, pm.load_sidecars(sc_dir), set(), config["matching"])
     auto, ambiguous = proposals["auto_merge"], proposals["ambiguous"]
     # clean pair + 3 single-source (run, auto-export ride, c2 row); contested skierg to review

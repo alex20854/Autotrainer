@@ -4,7 +4,9 @@
 Health Auto Export (Premium automation) drops JSON into an iCloud Drive folder
 the user syncs into data/raw/health/. Arrival is periodic and unreliable (iOS
 exports only while unlocked — spec §5), so this parser is pull-based and
-idempotent: it scans every *.json present and overwrites records in place.
+idempotent: it scans every *.json present and upserts records in place —
+never downgrading a record captured more fully by another export
+(records.upsert_record).
 
 The app's "Workouts" export shape (data.workouts[]) is the target; each workout
 carries summary fields plus optional heartRateData samples. Field variants seen
@@ -32,12 +34,15 @@ def parse_file(path: Path, out_dir: Path | None = None) -> list[dict]:
         print(f"skipping {path}: not valid JSON ({e})", file=sys.stderr)
         return []
     workouts = (payload.get("data") or {}).get("workouts") or []
-    out = []
+    out, kept = [], 0
     for w in workouts:
         rec = _to_record(w, path)
         if rec:
-            records.save_record(rec, out_dir)
+            if not records.upsert_record(rec, out_dir):
+                kept += 1
             out.append(rec)
+    if kept:
+        print(f"{path.name}: kept {kept} stored record(s) at least as complete as this export's")
     return out
 
 

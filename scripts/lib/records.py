@@ -75,6 +75,27 @@ def save_record(record: dict, out_dir: Path | None = None) -> Path:
     return path
 
 
+def upsert_record(record: dict, out_dir: Path | None = None) -> bool:
+    """save_record, unless that would downgrade an existing record.
+
+    The same workout arrives in many overlapping exports (Auto Export windows
+    overlap; old raw files may be gone). A record from a *different* raw file
+    replaces the stored one only if strictly richer (_richness: HR samples,
+    then fields present); ties keep what's stored, so re-ingesting an older
+    export can never clobber a newer, fuller capture. The *same* raw file
+    always overwrites, so parser fixes still apply on re-parse.
+    Returns True if written, False if the stored record was kept.
+    """
+    path = (out_dir or WORKOUTS_DIR) / f"{record['record_id']}.json"
+    if path.exists():
+        stored = json.loads(path.read_text(encoding="utf-8"))
+        if (stored.get("source_file") != record.get("source_file")
+                and _richness(record) <= _richness(stored)):
+            return False
+    save_record(record, out_dir)
+    return True
+
+
 def load_records(records_dir: Path | None = None) -> list[dict]:
     records_dir = records_dir or WORKOUTS_DIR
     records = []

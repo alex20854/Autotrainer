@@ -129,7 +129,9 @@ of the HR data.
 
 - `record_id` = `<source_kind>-<start compressed to YYYY-MM-DDTHHMMSS>-<type slug>`.
   Deterministic → re-running any parser on the same raw data overwrites the same
-  file (idempotent ingest, no duplicates).
+  file (idempotent ingest, no duplicates). A capture from a *different* raw
+  file replaces a stored record only if strictly richer (more HR samples, then
+  more fields) — overlapping or older exports never downgrade a record.
 - `hr.series` is `[offset_seconds_from_start, bpm]` pairs. C2 records may also
   carry `splits` (list of `{t_s, distance_m, pace_s_per_500m, watts}`) and
   `watts` (series like `hr.series`).

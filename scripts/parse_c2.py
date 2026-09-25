@@ -39,7 +39,7 @@ def parse_file(path: Path, out_dir: Path | None = None) -> list[dict]:
         rec = _detail_csv_to_record(rows, path)
         out = [rec] if rec else []
     for rec in out:
-        records.save_record(rec, out_dir)
+        records.upsert_record(rec, out_dir)
     return out
 
 

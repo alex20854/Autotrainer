@@ -8,7 +8,8 @@ its [start, end] window. Cardio-irrelevant workout types are kept too — the
 proposal script decides relevance; parsers don't filter by judgment.
 
 Idempotent: record ids derive from (source, start, type), so re-running over a
-newer export overwrites in place.
+newer export updates in place (records.upsert_record: never downgrades a
+richer capture from another export).
 
 Usage: python3 scripts/parse_health_export.py [export.xml] [--out DIR]
        (default input: data/raw/health/export.xml)
@@ -81,7 +82,7 @@ def parse_export(xml_path: Path, out_dir: Path | None = None) -> list[dict]:
             distance_m=w["distance_m"],
             hr=hr,
         )
-        records.save_record(rec, out_dir)
+        records.upsert_record(rec, out_dir)
         out.append(rec)
     return out
 

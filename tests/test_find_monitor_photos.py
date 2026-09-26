@@ -22,6 +22,15 @@ NUTRITION = ["Nutrition Facts", "Serving size 1 cup", "Calories 250", "Total Fat
              "Sodium 470mg", "Total Carbohydrate 31g"]
 RECEIPT = ["Subtotal 42.10", "Sales tax 2.53", "Total 44.63", "VISA", "10:42"]
 CHAT = ["What time works?", "Wait for me", "want to grab lunch", "12:30"]
+# Shapes of real false positives from the first live scan (synthetic text).
+EQUIPMENT_QUOTE = ["10:55", "Item", "Quantity", "Unit Price", "Total", "500 Watt Battery Backup Unit",
+                   "1", "$160.00", "$160.00", "Network Total", "$6,595.00", "Labor Total", "$11,700.00"]
+TAXI_RECEIPT = ["Receipt", "Start 09/08/26 20:45:53", "Trip Duration 00:21:22", "Base Fare $50.95",
+                "Tip $8.55", "Total Due $65.50", "Auth Code 123456", "Card Type AMEX"]
+SOCIAL_AD = ["8:32", "someequipmentshop", "2h", "Precor Replica", "SALE!", "Send message..."]
+FITNESS_SUMMARY = ["6:42", "Wed, Sep 9", "Elliptical", "Workout Details", "Workout Time", "0:23:21",
+                   "Active Calories", "220CAL", "Avg. Heart Rate", "150BPM"]
+CALENDAR = ["Tue 3 PM 5 min before", "12:30", "Lunch", "4 PM 3 attendees"]
 
 
 def test_console_photos_match():
@@ -30,7 +39,8 @@ def test_console_photos_match():
         assert score >= fmp.DEFAULTS["min_score"], (lines, hits)
 
 
-@pytest.mark.parametrize("lines", [NUTRITION, RECEIPT, CHAT, []])
+@pytest.mark.parametrize("lines", [NUTRITION, RECEIPT, CHAT, [], EQUIPMENT_QUOTE, TAXI_RECEIPT,
+                                   SOCIAL_AD, FITNESS_SUMMARY, CALENDAR])
 def test_everyday_text_does_not_match(lines):
     score, hits = fmp.score_text(lines)
     assert score < fmp.DEFAULTS["min_score"], hits
@@ -91,6 +101,15 @@ def test_promote_and_reject(ws):
     state = fmp.load_state()
     assert state["promoted"] == ["AAAA"] and state["rejected"] == ["BBBB"]
     assert {"AAAA", "BBBB"} <= fmp.known_uuids(state)   # never staged again
+
+
+def test_pending_survives_until_staged_or_decided(ws):
+    fmp.save_state({"scanned_through": None, "promoted": [], "rejected": [],
+                    "pending": ["CCCC", "DDDD"]})
+    assert fmp.load_state()["pending"] == ["CCCC", "DDDD"]
+    (ws / "inbox" / "CCCC.heic").write_bytes(b"x")
+    fmp.reject(["CCCC"])                       # decided -> no longer pending
+    assert fmp.load_state()["pending"] == ["DDDD"]
 
 
 def test_promote_unknown_uuid_exits(ws):

@@ -74,7 +74,7 @@ DEFAULTS = {
 # Scoring vocabulary. Each distinct pattern counts once. OCR on LCD consoles is
 # noisy ("watt" reads as wyatt / Walt / W30t), hence the loose variants.
 BRANDS = {  # +3: a console or brand name is near-conclusive
-    "concept2": r"concept\s*2|\bc2\b", "pm5": r"\bpm\s*[345]\b", "assault": r"\bassault",
+    "concept2": r"concept\s*2|\bc2\b", "pm5": r"\bpm[345]\b", "assault": r"\bassault",
     "airdyne": r"air\s*dyne", "schwinn": r"\bschwinn", "echo": r"\becho\s*bike",
     "stairmaster": r"stair\s*master|step\s*mill", "versaclimber": r"versa\s*climber",
     "life_fitness": r"life\s*fitness", "precor": r"\bprecor", "technogym": r"techno\s*gym",
@@ -95,10 +95,16 @@ WEAK = {  # +1: common console words that also appear elsewhere
     "bpm": r"\bbpm\b|heart\s*rate", "avg": r"\bav(g|e|erage)\b", "console_keys": r"\b(units|display|menu)\b",
     "meters": r"\b\d{3,6}\s*m\b",
 }
-NEGATIVE = {  # -3: receipts and nutrition labels also say "cal"
+NEGATIVE = {  # -3: everyday text that shares console vocabulary
     "nutrition": r"total\s*fat|sodium|serving\s*size|carbohydrate|nutrition\s*facts",
-    "receipt": r"\bsubtotal\b|\bsales\s*tax\b|\bvisa\b|\bmastercard\b|\bchange\s*due\b",
+    "receipt": r"\bsubtotal\b|\bsales\s*tax\b|\bvisa\b|\bmastercard\b|\bamex\b|\bchange\s*due\b"
+               r"|total\s*due|\bauth\s*code\b|\bfare\b",
+    # social-app chrome around ads/posts that mention equipment brands
+    "social": r"send\s*message|\br/\w+|\bu/\w+|\bupvote|\bsponsored\b",
+    # Apple Fitness/Health summaries: the Health export already carries these
+    "health_app": r"active\s*calories|during\s*your\s*last|workout\s*details|heart\s*rate:\s*workout",
 }
+PRICE = re.compile(r"\$\s?\d[\d,]*\.\d{2}")
 CLOCK = re.compile(r"\b\d{1,2}:\d{2}(:\d{2})?\b")
 NUMBER = re.compile(r"^\s*\d{2,6}(\.\d)?\s*$")
 
@@ -121,6 +127,8 @@ def score_text(lines: list[str], cfg: dict = DEFAULTS) -> tuple[int, list[str]]:
             if re.search(pattern, text):
                 score += weight
                 hits.append(name)
+    if len(PRICE.findall(text)) >= 3:   # quotes, invoices, receipts
+        score, hits = score - 3, hits + ["prices"]
     if CLOCK.search(text):
         score, hits = score + 1, hits + ["clock"]
     if sum(bool(NUMBER.match(line)) for line in lines) >= 4:
@@ -181,13 +189,16 @@ def _guard_write(path: Path) -> Path:
 def load_state() -> dict:
     if STATE_PATH.exists():
         return json.loads(STATE_PATH.read_text(encoding="utf-8"))
-    return {"scanned_through": None, "promoted": [], "rejected": []}
+    return {"scanned_through": None, "promoted": [], "rejected": [], "pending": []}
 
 
 def save_state(state: dict) -> None:
     _guard_write(STATE_PATH)
     STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    state["promoted"], state["rejected"] = sorted(set(state["promoted"])), sorted(set(state["rejected"]))
+    for key in ("promoted", "rejected", "pending"):
+        state[key] = sorted(set(state.get(key, [])))
+    done = set(state["promoted"]) | set(state["rejected"])
+    state["pending"] = [u for u in state["pending"] if u not in done]
     STATE_PATH.write_text(json.dumps(state, indent=2) + "\n", encoding="utf-8")
 
 
@@ -288,11 +299,18 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
     in_album = {p.uuid for p in db.photos(albums=[album], movies=False)} if album in db.albums else set()
     window = db.photos(movies=False, from_date=since, to_date=until)
     pool = {p.uuid: p for p in window}
-    pool.update({p.uuid: p for p in db.photos(uuid=list(in_album))} if in_album else {})
+    # matches from earlier runs that couldn't be staged: retried until staged
+    retry = set(state.get("pending", [])) | in_album
+    pool.update({p.uuid: p for p in db.photos(uuid=sorted(retry))} if retry else {})
 
     ends = workout_ends(records.load_records())
     matches, near_misses, scanned, skipped = [], [], 0, 0
-    for uuid, photo in sorted(pool.items(), key=lambda kv: kv[1].date):
+    total = len(pool)
+    print(f"photo finder: reading text from up to {total} photo(s) "
+          f"({since:%Y-%m-%d} -> {until:%Y-%m-%d})...", flush=True)
+    for i, (uuid, photo) in enumerate(sorted(pool.items(), key=lambda kv: kv[1].date), 1):
+        if i % 25 == 0 or i == total:
+            print(f"  {i}/{total}", flush=True)
         if uuid.upper() in seen or photo.intrash:
             skipped += 1
             continue
@@ -310,7 +328,7 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
           f"{skipped} already seen, {len(matches)} match(es); {len(ends)} workout end times")
     if not ends:
         print("  (no workout records yet — parse Health exports first for the timing bonus)")
-    not_local = 0
+    not_local, still_pending = 0, []
     for photo, score, hits in matches:
         label = f"score {score}" if score is not None else f"album '{album}'"
         line = f"  {photo.uuid}  {photo.date:%Y-%m-%d %H:%M}  {label}  [{', '.join(hits)}]"
@@ -326,6 +344,7 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
             print(f"{line}  EXPORT FAILED: {e}", file=sys.stderr)
         if path is None:
             not_local += 1
+            still_pending.append(photo.uuid.upper())
             continue
         strip_photo(_guard_write(path))
         print(f"{line}  -> data/inbox/photos/{path.name}")
@@ -334,9 +353,10 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
               f"[{', '.join(hits)}] — not staged; add to album '{album}' if it's a monitor")
     if not_local:
         print(f"  {not_local} match(es) not staged (original not local or export failed); "
-              "they stay unseen and will be retried next run")
+              "recorded as pending and retried on every run until staged")
     if not dry_run:
         state["scanned_through"] = until.isoformat(timespec="seconds")
+        state["pending"] = still_pending
         save_state(state)
     return 0
 

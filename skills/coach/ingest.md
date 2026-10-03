@@ -38,6 +38,9 @@ ones to the override album (default "Autotrainer") and re-run.
 
 If it fails to open the library, the app running it needs Full Disk Access
 (System Settings → Privacy & Security) — the athlete grants that, not you.
+Originals that live only in iCloud are fetched through Photos: macOS may ask
+the athlete to allow automation of Photos; the finder waits up to three
+minutes each, then records them as pending and says so.
 Skip this step on non-Mac setups; photos can always be dropped into
 `data/raw/photos/` by hand.
 

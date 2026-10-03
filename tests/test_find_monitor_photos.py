@@ -261,3 +261,32 @@ def test_resolve_library_discovery_is_lazy_guarded_and_ordered(tmp_path, monkeyp
     monkeypatch.setattr(fmp, "DEFAULT_LIBRARY", tmp_path / "missing.photoslibrary")
     with pytest.raises(SystemExit, match="no Photos library found"):
         fmp.resolve_library(None)
+
+
+
+def test_photos_mediated_export_gives_up_after_the_deadline(ws):
+    import threading
+
+    class StuckPhoto(FakePhoto):
+        path = None                                   # original only in iCloud -> goes through Photos
+
+        def export(self, dest, **kw):
+            threading.Event().wait()                  # macOS waiting on a permission dialog: never returns
+
+    with pytest.raises(fmp.ExportTimeout):
+        fmp.export_original(StuckPhoto(), fmp.INBOX_DIR, download=True, timeout_s=0.2)
+    assert not any(fmp.INBOX_DIR.iterdir())
+
+    class FailingPhoto(FakePhoto):
+        path = None
+
+        def export(self, dest, **kw):
+            raise ValueError("Photos said no")
+
+    with pytest.raises(ValueError, match="Photos said no"):   # real errors still surface as themselves
+        fmp.export_original(FailingPhoto(), fmp.INBOX_DIR, download=True, timeout_s=5)
+
+
+def test_local_originals_are_copied_without_the_deadline(ws):
+    out = fmp.export_original(FakePhoto(), fmp.INBOX_DIR, download=True, timeout_s=0.0001)
+    assert out.exists()

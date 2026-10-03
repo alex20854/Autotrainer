@@ -46,6 +46,7 @@ import re
 import shutil
 import sqlite3
 import sys
+import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -63,6 +64,7 @@ CONFIG_PATH = REPO_ROOT / "config" / "athlete.yaml"
 DEFAULTS = {
     "album": "Autotrainer",     # always-stage override album
     "library": None,            # path to a .photoslibrary; default: Photos' own (see resolve_library)
+    "export_timeout_s": 180,    # per iCloud-only original fetched through Photos (see _call_with_deadline)
     "min_score": 4,
     "lookback_days": 30,        # first-run window when there's no state yet
     "ocr_confidence": 0.3,
@@ -303,7 +305,36 @@ def ocr_lines(photo, min_conf: float) -> list[str]:
         return []
 
 
-def export_original(photo, dest: Path, download: bool) -> Path | None:
+class ExportTimeout(RuntimeError):
+    pass
+
+
+def _call_with_deadline(fn, seconds: float):
+    """Run fn() in a daemon thread and give up after `seconds`.
+
+    A Photos-mediated export blocks for as long as macOS waits for the user to
+    allow automation of Photos (or while Photos migrates its library after an
+    OS upgrade), and that wait has no timeout of its own — the run would sit
+    silently forever. An abandoned call is left to die with the process."""
+    result: dict = {}
+
+    def run():
+        try:
+            result["value"] = fn()
+        except BaseException as e:  # noqa: BLE001 — re-raised on the caller's thread
+            result["error"] = e
+
+    worker = threading.Thread(target=run, daemon=True)
+    worker.start()
+    worker.join(seconds)
+    if worker.is_alive():
+        raise ExportTimeout(f"no answer from Photos after {int(seconds)}s")
+    if "error" in result:
+        raise result["error"]
+    return result.get("value")
+
+
+def export_original(photo, dest: Path, download: bool, timeout_s: float | None = None) -> Path | None:
     ext = Path(photo.original_filename).suffix.lower() or ".jpeg"
     name = f"{photo.uuid}{ext}"
     _guard_write(dest / name)
@@ -315,7 +346,9 @@ def export_original(photo, dest: Path, download: bool) -> Path | None:
     if photo.path:
         out = photo.export(str(dest), **common)
     elif download:
-        out = photo.export(str(dest), use_photos_export=True, **common)
+        # original lives only in iCloud: Photos fetches it (AppleScript) — bounded wait
+        out = _call_with_deadline(lambda: photo.export(str(dest), use_photos_export=True, **common),
+                                  timeout_s or DEFAULTS["export_timeout_s"])
     else:
         return None
     if not out:
@@ -378,6 +411,11 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
     if not ends:
         print("  (no workout records yet — parse Health exports first for the timing bonus)")
     not_local, still_pending = 0, []
+    via_photos = [p for p, _, _ in matches if not p.path]
+    if via_photos and download and not dry_run:
+        print(f"  {len(via_photos)} original(s) live only in iCloud and will be fetched through "
+              f"Photos (up to {cfg['export_timeout_s']}s each) — if macOS asks to allow control "
+              "of Photos, click OK", flush=True)
     for photo, score, hits in matches:
         label = f"score {score}" if score is not None else f"album '{album}'"
         line = f"  {photo.uuid}  {photo.date:%Y-%m-%d %H:%M}  {label}  [{', '.join(hits)}]"
@@ -385,9 +423,14 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
             print(line)
             continue
         try:
-            path = export_original(photo, INBOX_DIR, download)
+            path = export_original(photo, INBOX_DIR, download, cfg.get("export_timeout_s"))
         except UnsafeWrite:
             raise   # a safety violation stops the run; never logged-and-continued
+        except ExportTimeout as e:
+            path = None
+            print(f"{line}  {e} — allow automation of Photos (System Settings -> Privacy & "
+                  "Security -> Automation) or re-run with --no-download; recorded as pending",
+                  file=sys.stderr, flush=True)
         except Exception as e:
             path = None
             print(f"{line}  EXPORT FAILED: {e}", file=sys.stderr)

@@ -64,6 +64,7 @@ classification:
 photo_finder:
   album: Autotrainer        # photos in this album are always staged
   library: null             # path to the .photoslibrary, only if Photos' own can't be found
+  export_timeout_s: 180     # per iCloud-only original fetched through Photos
   extra_brands: []          # e.g. [Keiser]
   extra_terms: []
 

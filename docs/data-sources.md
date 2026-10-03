@@ -85,7 +85,10 @@ detail capture of the same piece.
 - The finder needs **Full Disk Access** for the app running it; originals
   that exist only in iCloud additionally need Photos **automation**
   permission (System Settings → Privacy & Security → Automation), or they
-  are recorded as pending and retried.
+  are recorded as pending and retried. macOS's permission prompt blocks the
+  export call indefinitely, so the finder waits `photo_finder.export_timeout_s`
+  (default 180 s) per such original, then records it as pending and moves on,
+  saying why.
 - Vision OCR misreads LCD consoles predictably (`watt` → `wyatt`, `Walt`,
   `W30t`); the scorer's loose patterns and penalties for receipts, nutrition
   labels, social-app chrome and Fitness-app summaries are tuned on real hits.

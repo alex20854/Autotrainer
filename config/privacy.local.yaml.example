@@ -10,7 +10,8 @@ never_commit:
   - "Your Employer"
   - "Name Of Your Gym"
 
-# Binary activity files (.fit) can carry GPS and cannot be inspected; list each
-# reviewed one by its repo-relative path to let it be committed.
+# Opaque files — FIT, compressed files, archives — can carry GPS and cannot be
+# inspected; list each reviewed one by its repo-relative path to let it be
+# committed. (Compressed GPX/KML/KMZ/GeoJSON are refused even when listed.)
 allow_files: []
 #  - data/raw/c2/example-indoor-row.fit

@@ -75,7 +75,10 @@ Nothing that can carry a route enters git. `privacy_check.py` fails on GPX,
 KML, KMZ and GeoJSON files outright, on TCX files containing position
 elements, on FIT files unless a reviewed file is listed under `allow_files`
 in the gitignored `config/privacy.local.yaml` (FIT is binary and cannot be
-inspected), and on latitude/longitude values in JSON. Indoor-machine exports
+inspected; compressed files and archives are treated the same way, and a
+compressed GPX/KML/KMZ/GeoJSON is refused even when listed), and on
+latitude/longitude values in JSON, including array-shaped coordinates. In
+`--staged` mode it reads what is staged, not the working tree. Indoor-machine exports
 normally have no positions; when a source offers a choice, prefer CSV.
 
 ## Monitor photos (`data/raw/photos/`, `find_monitor_photos.py`)

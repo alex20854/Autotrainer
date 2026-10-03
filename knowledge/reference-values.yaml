@@ -31,10 +31,28 @@ athletes:
     note: "WorldTour typically ~70-85"
 
 # VO2max estimation from the BikeErg 20-min test (documented so the number is
-# reproducible): power at VO2max ~= P20 / 0.85, then ACSM leg-cycling
-# VO2 = 10.8 x W / kg + 7. Grade C estimate; a sub-maximal test biases it LOW,
-# so the dashboard labels it a floor.
+# reproducible): 20-min power ~= FTP / 0.95, power at VO2max ~= P20 / 0.85,
+# then ACSM leg-cycling VO2 = 10.8 x W / kg + 7. Grade C estimate; a
+# sub-maximal test biases it LOW (see method_caveats.power_estimate).
 estimate:
   p20_to_pvo2max_divisor: 0.85
   acsm_slope: 10.8
   acsm_intercept: 7
+
+# General caveats per estimation method, shown verbatim beside each of the
+# athlete's VO2max estimates on the dashboard. Method-level only: what an
+# estimate means for one athlete (e.g. which limiter dominates) is recorded in
+# that athlete's benchmarks.md, never here. Unsourced claims are [unverified].
+method_caveats:
+  power_estimate: >-
+    estimated from erg power with the ACSM leg-cycling equation and fixed
+    power ratios (grade C); an effort short of truly maximal reads low, and
+    the error for an individual can be large [unverified]
+  hr_ratio_estimate: >-
+    Uth–Sørensen heart-rate ratio (15.3 × HRmax ÷ resting HR); depends on an
+    accurately measured HRmax and resting HR, and the error for an individual
+    can be large [unverified]
+  watch_estimate: >-
+    consumer wearable estimate modelled by the device maker from HR and
+    movement during recorded activities; the method is proprietary and its
+    error for an individual can be large [unverified]

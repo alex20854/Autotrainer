@@ -1,3 +1,6 @@
+# SYNTHETIC test fixture (tests/test_ingest_pipeline.py, tests/test_dashboard.py):
+# invented values, no real athlete. Based on templates/workspace/config/athlete.yaml.
+#
 # Athlete configuration — the machine-readable contract for zones and matching.
 # Updated by /coach setup and after benchmark retests (benchmarks.md is the
 # dated human-readable log these values come from). Scripts read this file;
@@ -6,14 +9,14 @@
 athlete:
   # Filled in by /coach setup. Formula-derived values are BOOTSTRAP ONLY and
   # must be flagged as such until a field test replaces them (spec §11).
-  hr_max: null              # bpm; from observed max or field test, not 220-age
-  hr_resting: null          # bpm
+  hr_max: 192               # bpm; from observed max or field test, not 220-age
+  hr_resting: 52            # bpm
   # For the dashboard comparison section + VO2max estimate (mild
   # quasi-identifiers if your workspace repo is public; leave null to omit):
-  age: null
-  sex: null
-  weight_kg: null
-  lthr: null                # bpm; lactate threshold HR from a field test
+  age: 45
+  sex: female
+  weight_kg: 71
+  lthr: 160                 # bpm; lactate threshold HR from a field test
   maf_cap: null             # bpm; 180-age adjusted, if MAF-style base is used
   timezone: "America/New_York"   # home zone, informational (day boundaries in reports); matching compares absolute instants and never reads it
   # Optional: a short note on the anchors' standing, in the coach's words,
@@ -51,13 +54,11 @@ metrics:
 # Per-modality power anchors (watts). ftp drives threshold/sweet-spot targets;
 # z2_watts_ceiling cross-checks that "easy" sessions were actually easy.
 power:
-  bikeerg:  {ftp: null, z2_watts_ceiling: null}
-  rowerg:   {ftp: null, z2_watts_ceiling: null}
-  skierg:   {ftp: null, z2_watts_ceiling: null}
+  bikeerg:  {ftp: 200, z2_watts_ceiling: 150}
 
 # Equipment the athlete actually uses; /coach plan should not prescribe
 # machines that aren't listed here.
-equipment: []     # e.g. concept2-rowerg, concept2-bikeerg, airdyne, treadmill, elliptical (ids from knowledge/machines.md)
+equipment: [concept2-rowerg, concept2-bikeerg]     # e.g. concept2-rowerg, concept2-bikeerg, airdyne, treadmill, elliptical (ids from knowledge/machines.md)
 
 # Activity classification: training sessions vs baseline activity.
 # Baseline-type records (Apple Watch auto-detected walks etc.) go to the

@@ -1,0 +1,13 @@
+photo: data/raw/photos/console-0002.jpeg
+converted: null
+exif_time: "2030-05-13T07:51:10-05:00"
+extracted: true
+machine: concept2-bikeerg
+machine_confidence: high
+fields:
+  elapsed_time_s: {value: 2990, confidence: high}
+  distance_m: {value: 24600, confidence: high}
+  watts_avg: {value: 170, confidence: high}
+  kcal: {value: 470, confidence: medium}
+splits: []
+notes: "synthetic fixture"

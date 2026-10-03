@@ -2,32 +2,45 @@
 """Render dashboard.html — a read-only view of the engine's files (spec §2).
 
 Pure rendering, no logic or state of its own: reads index.jsonl,
-baseline.jsonl, session frontmatter, config/athlete.yaml and benchmarks.md,
-writes one self-contained HTML file (inline CSS/SVG, a few lines of inline JS
-for tooltips, no external requests). Deterministic: same inputs -> same file;
-the "data through" stamp derives from the data, not the clock.
+baseline.jsonl, metrics.jsonl, session frontmatter, config/athlete.yaml and
+benchmarks.md, writes one self-contained HTML file (inline CSS/SVG, a few
+lines of inline JS for tooltips, no external requests). Deterministic: same
+inputs -> same file; the "data through" stamp is the status facts' `as_of`
+(scripts/lib/facts.py), the newest date in the data, never the clock.
 
-Usage: python3 scripts/build_dashboard.py
+Holds no athlete facts: anchor provenance comes from benchmarks.md (the
+newest dated heading naming an LTHR or FTP test), VO2max estimates carry only
+the general method caveats in knowledge/reference-values.yaml, and the
+optional `athlete.anchors_note` in config/athlete.yaml is the coach's own
+words, shown verbatim. A blank workspace renders plain empty states.
+
+Usage: python3 scripts/build_dashboard.py [--artifact PATH]
 """
 
 from __future__ import annotations
 
 import html
-import json
 import math
 import re
 import sys
+from datetime import date
 from pathlib import Path
 
 import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from lib import frontmatter, records
+from lib import facts as facts_lib
+from lib import frontmatter
 from lib import workspace
 import compute_metrics
 
-REPO_ROOT = workspace.root()
-OUT_PATH = REPO_ROOT / "dashboard.html"
+REFERENCE_VALUES = workspace.ENGINE_ROOT / "knowledge" / "reference-values.yaml"
+# A benchmarks.md heading whose title names one of these tests is the anchor
+# tiles' provenance ("benchmark <date>"): the newest such heading wins.
+ANCHOR_BENCHMARK = re.compile(r"lthr|ftp", re.IGNORECASE)
+# '- Result: x', '- **Result:** x' and '- **Result**: x' under a benchmark heading.
+RESULT_LINE = re.compile(r"^\s*[-*]\s*(?:\*\*)?Result(?:\*\*)?:(?:\*\*)?\s*(.*?)\s*$",
+                         re.IGNORECASE)
 
 # palette: dataviz reference instance (light / dark)
 ZONE_RAMP_L = ["#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"]
@@ -102,25 +115,70 @@ for(const el of document.querySelectorAll('[data-tip]')){
 
 # ---------------------------------------------------------------- data loading
 
-def load_data():
-    index = [json.loads(l) for l in (REPO_ROOT / "data" / "index.jsonl").open()] \
-        if (REPO_ROOT / "data" / "index.jsonl").exists() else []
-    baseline = [json.loads(l) for l in (REPO_ROOT / "data" / "baseline.jsonl").open()] \
-        if (REPO_ROOT / "data" / "baseline.jsonl").exists() else []
-    config = yaml.safe_load((REPO_ROOT / "config" / "athlete.yaml").read_text())
+def load_data(root: Path) -> dict:
+    """Everything the page renders, read from the workspace at `root`.
+
+    facts_lib.load does the file reading (a missing or unreadable file is an
+    empty value, so a blank workspace renders); this adds per-session
+    time-in-zone from session frontmatter, the benchmark table rows and the
+    status facts (as_of, anchors) computed over the same data."""
+    root = Path(root)
+    data = facts_lib.load(root)
     tiz = {}
-    for s in index:
-        fm, _ = frontmatter.load(REPO_ROOT / s["file"])
+    for s in data["index"]:
+        path = root / (s.get("file") or "")
+        if not s.get("file") or not path.is_file():
+            continue
+        fm, _ = frontmatter.load(path)
         z = (fm.get("computed") or {}).get("time_in_zone")
         if z:
             tiz[s["id"]] = z
-    bench = []
-    btext = (REPO_ROOT / "benchmarks.md").read_text() if (REPO_ROOT / "benchmarks.md").exists() else ""
-    for m in re.finditer(r"^### (\d{4}-\d{2}-\d{2}) — (.+)$\n- Result: (.+)$",
-                         btext, re.MULTILINE):
-        bench.append({"date": m.group(1), "test": m.group(2),
-                      "result": re.sub(r"[*`]", "", m.group(3))})
-    return index, baseline, config, tiz, bench
+    return {**data, "tiz": tiz, "bench": benchmark_rows(data["benchmarks_md"]),
+            "facts": facts_lib.collect(data)}
+
+
+def benchmark_rows(benchmarks_md: str | None) -> list[dict]:
+    """One Benchmarks-table row per dated heading, by the same rule as
+    facts_lib.parse_benchmarks (hyphen, en or em dash; valid date; outside
+    code fences) so the table never disagrees with the anchor provenance or
+    the status facts. `result` is the section's first '- Result:' line, or
+    '' when it has none."""
+    rows, current, fenced = [], None, False
+    for line in (benchmarks_md or "").splitlines():
+        if facts_lib.FENCE.match(line):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        m = facts_lib.BENCHMARK_HEADING.match(line)
+        if m or line.startswith("#"):
+            current = None
+            if m and _is_date(m.group(1)):
+                current = {"date": m.group(1), "test": m.group(2), "result": ""}
+                rows.append(current)
+        elif current is not None and not current["result"]:
+            r = RESULT_LINE.match(line)
+            if r:
+                current["result"] = re.sub(r"[*`]", "", r.group(1))
+    return rows
+
+
+def _is_date(text: str) -> bool:
+    try:
+        date.fromisoformat(text)
+        return True
+    except ValueError:
+        return False
+
+
+def anchor_benchmark(benchmarks_md: str | None) -> dict | None:
+    """Newest dated benchmarks.md heading whose title mentions LTHR or FTP
+    (first in file order on a tie), or None."""
+    latest = None
+    for b in facts_lib.parse_benchmarks(benchmarks_md):
+        if ANCHOR_BENCHMARK.search(b["title"]) and (latest is None or b["date"] > latest["date"]):
+            latest = b
+    return latest
 
 
 def iso_week(date: str) -> str:
@@ -216,47 +274,53 @@ def stacked_bar_chart(rows, series, colors, *, w=470, h=200, unit="min"):
     return "".join(parts)
 
 
-def comparison_section(config) -> str:
-    """VO2max dot plot: the athlete vs reference points, one shared axis."""
-    ref_path = workspace.ENGINE_ROOT / "knowledge" / "reference-values.yaml"
-    if not ref_path.exists():
+def comparison_section(data: dict) -> str:
+    """VO2max dot plot: the athlete vs reference points, one shared axis.
+    Each of the athlete's estimates carries only its method's general caveat
+    (reference-values.yaml `method_caveats`); what the numbers mean for this
+    athlete belongs in their benchmarks.md, not here."""
+    if not REFERENCE_VALUES.exists():
         return ""
-    refs = yaml.safe_load(ref_path.read_text())
+    refs = yaml.safe_load(REFERENCE_VALUES.read_text(encoding="utf-8")) or {}
+    caveats = refs.get("method_caveats") or {}
+    config = data["config"]
     athlete = config.get("athlete") or {}
     power = (config.get("power") or {}).get("bikeerg") or {}
     age, sex, kg = athlete.get("age"), athlete.get("sex"), athlete.get("weight_kg")
     ftp = power.get("ftp")
 
-    rows = [(a["label"], a["vo2max"], a["note"], "ref") for a in refs["athletes"]]
-    if age and sex and refs["percentiles"].get(sex):
+    rows = [(a["label"], a["vo2max"], a["note"], "ref") for a in refs.get("athletes") or []]
+    percentiles = refs.get("percentiles") or {}
+    if age and sex and percentiles.get(sex):
         decade = f"{age//10*10}-{age//10*10+9}"
-        pair = refs["percentiles"][sex].get(decade)
+        pair = percentiles[sex].get(decade)
         if pair:
             rows.append((f"Top 10%, {sex} {decade}", pair[1], "FRIEND registry (approx.)", "ref"))
             rows.append((f"Average, {sex} {decade}", pair[0], "FRIEND registry (approx.)", "ref"))
+
+    def estimate(label, value, detail, method):
+        caveat = caveats.get(method)
+        rows.append((label, value, f"{detail} — {caveat}" if caveat else detail, "you"))
+
     you = None
-    if kg and ftp:
-        est = refs["estimate"]
+    est = refs.get("estimate")
+    if kg and ftp and est:
         p20 = ftp / 0.95
         you = round((est["acsm_slope"] * (p20 / est["p20_to_pvo2max_divisor"]) / kg
                      + est["acsm_intercept"]), 1)
-        rows.append(("You — power floor", you,
-                     f"from the 20-min test @ {round(p20)} W, {kg} kg — leg-limited, known low", "you"))
-    metrics_path = REPO_ROOT / "data" / "derived" / "metrics.jsonl"
-    if metrics_path.exists():
-        vo2_points = [json.loads(l) for l in metrics_path.open()
-                      if '"vo2_max"' in l]
-        if vo2_points:
-            latest = max(vo2_points, key=lambda p: p["date"])
-            rows.append(("You — Apple Watch", latest["value"],
-                         f"Cardio Fitness estimate {latest['date']} — walk-derived, "
-                         "tends to under-read casual walkers", "you"))
+        estimate("You — power estimate", you,
+                 f"from FTP {ftp} W (20-min power ≈ {round(p20)} W), {kg} kg", "power_estimate")
+    vo2_points = [m for m in data["metrics"]
+                  if m.get("name") == "vo2_max" and isinstance(m.get("value"), (int, float))]
+    if vo2_points:
+        latest = max(vo2_points, key=lambda p: p["date"])
+        estimate("You — watch estimate", latest["value"],
+                 f"wearable estimate {latest['date']}", "watch_estimate")
     hr_rest = athlete.get("hr_resting")
     hr_max = athlete.get("hr_max")
     if hr_rest and hr_max:
-        rows.append(("You — HR-ratio", round(15.3 * hr_max / hr_rest, 1),
-                     f"Uth–Sørensen: 15.3 × {hr_max} ÷ {hr_rest} — "
-                     "quad-independent, tends optimistic", "you"))
+        estimate("You — HR-ratio estimate", round(15.3 * hr_max / hr_rest, 1),
+                 f"15.3 × {hr_max} ÷ {hr_rest}", "hr_ratio_estimate")
     if not rows:
         return ""
     rows.sort(key=lambda r: -r[1])
@@ -287,47 +351,152 @@ def comparison_section(config) -> str:
                    "yourself (and your age-group lines) on this scale.</p>")
     return f"""<div class="card"><h2>VO&#8322;max in context</h2>
 <div class="d">ml/kg/min — estimates and literature values, not lab tests;
-your true value most likely sits between the power floor and the HR-ratio
-estimate</div>
+hover a point for its method and caveat</div>
 {"".join(parts)}{missing}</div>"""
 
 
 # ---------------------------------------------------------------- assembly
+
+UNIT = "<span style='font-size:14px'> {}</span>"
+
 
 def tile(k, v, n=""):
     return (f'<div class="tile"><div class="k">{html.escape(k)}</div>'
             f'<div class="v">{v}</div><div class="n">{html.escape(n)}</div></div>')
 
 
-def build() -> str:
-    index, baseline, config, tiz, bench = load_data()
+def subtitle(as_of, has_sessions: bool, lthr, ftp, anchors_note) -> str:
+    """'data through <as_of>' (or 'no sessions yet') and the configured
+    anchors, with the coach's optional anchors_note verbatim."""
+    parts = ["Read-only rendering of the training ledger"]
+    if as_of:
+        parts.append(f"data through {as_of}")
+    if not has_sessions:
+        parts.append("no sessions yet")
+    out = " · ".join(html.escape(p) for p in parts)
+    anchors = [a for a in (f"LTHR {lthr}" if lthr is not None else None,
+                           f"FTP {ftp} W" if ftp is not None else None) if a]
+    note = anchors_note.strip() if isinstance(anchors_note, str) else ""
+    if anchors or note:
+        text = ", ".join(anchors)
+        text = f"{text} ({note})" if text and note else text or note
+        out += "\n · " + html.escape(f"anchors: {text}")
+    return out
+
+
+def build(root: Path | None = None) -> str:
+    """The full dashboard document for the workspace at `root` (default:
+    workspace.root()). Reads files only; writes nothing."""
+    root = Path(root) if root is not None else workspace.root()
+    data = load_data(root)
+    index, baseline, config = data["index"], data["baseline"], data["config"]
+    tiz, bench, facts = data["tiz"], data["bench"], data["facts"]
     athlete = config.get("athlete") or {}
     power = (config.get("power") or {}).get("bikeerg") or {}
     lthr, ftp = athlete.get("lthr"), power.get("ftp")
     ceiling = power.get("z2_watts_ceiling")
     bands, zones_source = compute_metrics.zone_bounds(config)
-    z2 = "—"
+    z2 = None
     if zones_source == "lthr" and "z2" in bands:
         # whole bpm inside [lo, hi): the resolved, contiguous band
         z2_lo, z2_hi = bands["z2"]
         z2 = f"{math.ceil(z2_lo)}–{math.ceil(z2_hi) - 1}"
-    data_through = max((s["date"] for s in index), default="—")
+    as_of = facts["as_of"]  # newest date in the data, never the clock
 
-    last7 = [s for s in index if s["date"] > _shift(data_through, -7)]
-    train_min = round(sum(s["duration_s"] or 0 for s in last7) / 60)
-    this_week = iso_week(data_through) if index else ""
-    base_week = next((b for b in baseline if b["week"] == this_week), None)
+    # anchor tiles: only for anchors that are set; provenance from benchmarks.md
+    anchor_bench = anchor_benchmark(data["benchmarks_md"])
+    provenance = f"benchmark {anchor_bench['date']}" if anchor_bench else ""
+    tiles = []
+    if ftp is not None:
+        tiles.append(tile("FTP (BikeErg)", f"{ftp}{UNIT.format('W')}", provenance))
+    if lthr is not None:
+        tiles.append(tile("LTHR", f"{lthr}{UNIT.format('bpm')}", provenance))
+    if z2:
+        tiles.append(tile("Zone 2", f"{z2}{UNIT.format('bpm')}",
+                          f"≤{ceiling} W on the BikeErg" if ceiling is not None else ""))
+    if index:
+        # counted back from the newest session, not as_of: daily health
+        # metrics usually run ahead of workout exports
+        last_session = max(s["date"] for s in index)
+        last7 = [s for s in index if s["date"] > _shift(last_session, -7)]
+        train_min = round(sum(s.get("duration_s") or 0 for s in last7) / 60)
+        tiles.append(tile("Training, last 7 days", f"{train_min}{UNIT.format('min')}",
+                          f"{len(last7)} sessions"))
+        this_week = iso_week(last_session)
+        base_week = next((b for b in baseline if b.get("week") == this_week), None)
+        tiles.append(tile("Baseline this week",
+                          f"{(base_week or {}).get('minutes', 0)}{UNIT.format('min')}",
+                          f"{base_week['count']} walks" if base_week else "no short walks this week"))
+    tiles_html = f'<div class="tiles">{"".join(tiles)}</div>' if tiles else ""
 
-    tiles = "".join([
-        tile("FTP (BikeErg)", f"{ftp or '—'}<span style='font-size:14px'> W</span>", "conservative floor"),
-        tile("LTHR", f"{lthr or '—'}<span style='font-size:14px'> bpm</span>", "field test 08-11"),
-        tile("Zone 2", f"{z2}<span style='font-size:14px'> bpm</span>", f"≤{ceiling} W on the BikeErg"),
-        tile("Training, last 7 days", f"{train_min}<span style='font-size:14px'> min</span>",
-             f"{len(last7)} sessions"),
-        tile("Baseline this week", f"{(base_week or {}).get('minutes','—')}<span style='font-size:14px'> min</span>",
-             f"{base_week['count']} walks" if base_week else "no short walks this week"),
-    ])
+    session_cards = session_charts(index, tiz, lthr, ftp, ceiling, zones_source,
+                                   athlete.get("hr_max")) if index else ""
 
+    base_rows = [(b["week"][5:], {"m": b["minutes"]},
+                  f"{b['week']}  {b['minutes']} min, {b['count']} walks")
+                 for b in baseline]
+    base_chart = (stacked_bar_chart(base_rows, ["m"], {"m": "var(--base)"}) if base_rows
+                  else "<p class='d'>no baseline activity yet</p>")
+
+    def _dec_cell(s):
+        if s.get("decoupling_pct") is None:
+            return "—"
+        return f"{s['decoupling_pct']}" + ("" if s.get("decoupling_method") == "pw_hr" else " (HR)")
+
+    sess_rows = "".join(
+        f"<tr><td>{s['date']}</td><td>{s['modality']}</td>"
+        f"<td>{round((s.get('duration_s') or 0)/60)} min</td>"
+        f"<td>{s.get('hr_avg') or '—'}</td><td>{s.get('watts_avg') or '—'}</td>"
+        f"<td>{s.get('efficiency_factor') or '—'}</td>"
+        f"<td>{_dec_cell(s)}</td>"
+        f"<td>{s['compliance_score'] if s.get('compliance_score') is not None else '—'}</td></tr>"
+        for s in sorted(index, key=lambda s: s["date"], reverse=True)[:12])
+    sessions_html = (
+        '<table><tr><th>date</th><th>modality</th><th>dur</th><th>HR</th><th>watts</th>\n'
+        '<th>EF</th><th title="power:HR decoupling; (HR) = heart-rate drift, no power trace">'
+        f'dec %</th><th>score</th></tr>{sess_rows}</table>'
+        if index else "<p class='d'>no sessions yet</p>")
+
+    def _clip(text, n=100):
+        return text if len(text) <= n else text[:n].rsplit(" ", 1)[0] + " …"
+
+    bench_rows = "".join(
+        f"<tr><td>{b['date']}</td><td>{html.escape(b['test'])}</td>"
+        f"<td>{html.escape(_clip(b['result'])) or '—'}</td></tr>" for b in bench)
+    bench_html = (f"<table><tr><th>date</th><th>test</th><th>result</th></tr>{bench_rows}</table>"
+                  if bench else "<p class='d'>no benchmarks yet</p>")
+
+    return f"""<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cardio Coach</title>
+<style>{CSS}</style>
+<div class="wrap">
+<h1>Cardio Coach</h1>
+<p class="sub">{subtitle(as_of, bool(index), lthr, ftp, athlete.get("anchors_note"))}</p>
+{tiles_html}
+<div class="grid">
+{session_cards}
+<div class="card"><h2>Baseline activity</h2>
+<div class="d">unstructured movement (walks) — tracked, never scored</div>
+{base_chart}</div>
+{comparison_section(data)}
+<div class="card"><h2>Benchmarks</h2>
+{bench_html}</div>
+<div class="card full"><h2>Recent sessions</h2>
+{sessions_html}</div>
+</div>
+<p class="foot">Generated by scripts/build_dashboard.py — a pure rendering of
+data/index.jsonl, data/baseline.jsonl, config/athlete.yaml and benchmarks.md.
+Regenerated on every ingest; edit those files, never this one.</p>
+</div>
+<script>{JS}</script>
+"""
+
+
+def session_charts(index, tiz, lthr, ftp, ceiling, zones_source, hr_max) -> str:
+    """The per-session chart cards (efficiency, watts, zones, decoupling);
+    only rendered when the ledger has sessions."""
     rides = [s for s in index if s["modality"] == "bikeerg" and s.get("efficiency_factor")]
     ef_pts = [(s["date"][5:], s["efficiency_factor"],
                f"{s['date']}  EF {s['efficiency_factor']}\n{s['watts_avg']} W @ {s['hr_avg']} bpm")
@@ -335,6 +504,11 @@ def build() -> str:
     watt_pts = [(s["date"][5:], s["watts_avg"],
                  f"{s['date']}  {s['watts_avg']} W avg\n{round((s['duration_s'] or 0)/60)} min")
                 for s in index if s["modality"] == "bikeerg" and s.get("watts_avg")]
+    watt_refs = [r for r in ((ceiling, f"z2 ceiling {ceiling}W"), (ftp, f"FTP {ftp}W"))
+                 if r[0] is not None]
+    against = [n for v, n in ((ceiling, "the Zone 2 ceiling"), (ftp, "current FTP"))
+               if v is not None]
+    watt_desc = ("against " + " and ".join(against)) if against else "average power per ride"
     # power:HR decoupling and HR drift never share a chart: only pw_hr points
     # are read against the 5% line; HR drift gets its own unreferenced card
     def _dec_pts(power: bool):
@@ -371,74 +545,25 @@ def build() -> str:
     zone_colors = {z: f"var(--{z})" for z in zones}
     zone_legend = "".join(
         f'<span><span class="sw" style="background:var(--{z})"></span>{z}</span>' for z in zones)
+    zone_legend = f'\n<div class="legend">{zone_legend}</div>' if zone_rows else ""
+    zones_from = {"lthr": f" (zones from LTHR {lthr})",
+                  "bootstrap": f" (bootstrap zones from HRmax {hr_max})"}.get(zones_source, "")
 
-    base_rows = [(b["week"][5:], {"m": b["minutes"]},
-                  f"{b['week']}  {b['minutes']} min, {b['count']} walks")
-                 for b in baseline]
-
-    def _dec_cell(s):
-        if s.get("decoupling_pct") is None:
-            return "—"
-        return f"{s['decoupling_pct']}" + ("" if s.get("decoupling_method") == "pw_hr" else " (HR)")
-
-    sess_rows = "".join(
-        f"<tr><td>{s['date']}</td><td>{s['modality']}</td>"
-        f"<td>{round((s['duration_s'] or 0)/60)} min</td>"
-        f"<td>{s['hr_avg'] or '—'}</td><td>{s['watts_avg'] or '—'}</td>"
-        f"<td>{s['efficiency_factor'] or '—'}</td>"
-        f"<td>{_dec_cell(s)}</td>"
-        f"<td>{s['compliance_score'] if s['compliance_score'] is not None else '—'}</td></tr>"
-        for s in sorted(index, key=lambda s: s["date"], reverse=True)[:12])
-    def _clip(text, n=100):
-        return text if len(text) <= n else text[:n].rsplit(" ", 1)[0] + " …"
-
-    bench_rows = "".join(
-        f"<tr><td>{b['date']}</td><td>{html.escape(b['test'])}</td>"
-        f"<td>{html.escape(_clip(b['result']))}</td></tr>" for b in bench)
-
-    return f"""<!doctype html>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Cardio Coach</title>
-<style>{CSS}</style>
-<div class="wrap">
-<h1>Cardio Coach</h1>
-<p class="sub">Read-only rendering of the training ledger · data through {data_through}
- · anchors: LTHR {lthr or '—'}, FTP {ftp or '—'} W (floors, re-test pending)</p>
-<div class="tiles">{tiles}</div>
-<div class="grid">
-<div class="card"><h2>Efficiency factor — BikeErg</h2>
+    return f"""<div class="card"><h2>Efficiency factor — BikeErg</h2>
 <div class="d">avg watts ÷ avg HR per ride; rising = same effort, more output</div>
 {dot_line_chart(ef_pts, y_label="Efficiency factor")}</div>
 <div class="card"><h2>Avg watts per ride — BikeErg</h2>
-<div class="d">against the Zone 2 ceiling and current FTP floor</div>
-{dot_line_chart(watt_pts, fmt="{:.0f}", refs=[(ceiling, f"z2 ceiling {ceiling}W"), (ftp, f"FTP {ftp}W")] if ftp else [])}</div>
+<div class="d">{watt_desc}</div>
+{dot_line_chart(watt_pts, fmt="{:.0f}", refs=watt_refs)}</div>
 <div class="card"><h2>Weekly minutes in zone</h2>
-<div class="d">HR time-in-zone across training sessions (zones from LTHR {lthr or "—"})</div>
-{stacked_bar_chart(zone_rows, zones, zone_colors)}
-<div class="legend">{zone_legend}</div></div>
-{dec_cards}
-<div class="card"><h2>Baseline activity</h2>
-<div class="d">unstructured movement (walks) — tracked, never scored</div>
-{stacked_bar_chart(base_rows, ["m"], {"m": "var(--base)"})}</div>
-{comparison_section(config)}
-<div class="card"><h2>Benchmarks</h2>
-<table><tr><th>date</th><th>test</th><th>result</th></tr>{bench_rows}</table></div>
-<div class="card full"><h2>Recent sessions</h2>
-<table><tr><th>date</th><th>modality</th><th>dur</th><th>HR</th><th>watts</th>
-<th>EF</th><th title="power:HR decoupling; (HR) = heart-rate drift, no power trace">dec %</th><th>score</th></tr>{sess_rows}</table></div>
-</div>
-<p class="foot">Generated by scripts/build_dashboard.py — a pure rendering of
-data/index.jsonl, data/baseline.jsonl, config/athlete.yaml and benchmarks.md.
-Regenerated on every ingest; edit those files, never this one.</p>
-</div>
-<script>{JS}</script>
-"""
+<div class="d">HR time-in-zone across training sessions{zones_from}</div>
+{stacked_bar_chart(zone_rows, zones, zone_colors)}{zone_legend}</div>
+{dec_cards}"""
 
 
 def _shift(date: str, days: int) -> str:
     from datetime import date as d, timedelta
-    return (d.fromisoformat(date) + timedelta(days=days)).isoformat() if date != "—" else date
+    return (d.fromisoformat(date) + timedelta(days=days)).isoformat()
 
 
 def main() -> int:
@@ -448,9 +573,12 @@ def main() -> int:
                     help="also write an artifact-ready copy (no doctype — the "
                          "claude.ai artifact wrapper supplies the document shell)")
     args = ap.parse_args()
-    doc = build()
-    OUT_PATH.write_text(doc, encoding="utf-8")
-    print(f"dashboard.html rendered ({OUT_PATH.stat().st_size // 1024} KB)")
+    root = workspace.root()
+    workspace.require(root)
+    out_path = root / "dashboard.html"
+    doc = build(root)
+    out_path.write_text(doc, encoding="utf-8")
+    print(f"dashboard.html rendered ({out_path.stat().st_size // 1024} KB)")
     if args.artifact:
         args.artifact.write_text(doc.replace("<!doctype html>\n", "", 1), encoding="utf-8")
         print(f"artifact copy -> {args.artifact}")

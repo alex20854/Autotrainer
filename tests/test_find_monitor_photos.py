@@ -290,3 +290,28 @@ def test_photos_mediated_export_gives_up_after_the_deadline(ws):
 def test_local_originals_are_copied_without_the_deadline(ws):
     out = fmp.export_original(FakePhoto(), fmp.INBOX_DIR, download=True, timeout_s=0.0001)
     assert out.exists()
+
+
+
+def test_after_one_photos_timeout_the_rest_are_recorded_pending_without_waiting(ws):
+    import threading, time
+
+    class StuckPhoto(FakePhoto):
+        path = None
+        calls = 0
+
+        def export(self, dest, **kw):
+            StuckPhoto.calls += 1
+            threading.Event().wait()
+
+    cfg = {**fmp.DEFAULTS, "export_timeout_s": 0.2}
+    t0 = time.monotonic()
+    path, ok, note = fmp.stage_match(StuckPhoto(), cfg, download=True, photos_ok=True)
+    assert path is None and ok is False and "no answer from Photos" in note
+    path, ok, note = fmp.stage_match(StuckPhoto(), cfg, download=True, photos_ok=ok)
+    assert path is None and ok is False and "skipped" in note
+    assert StuckPhoto.calls == 1                      # the second one never went to Photos
+    assert time.monotonic() - t0 < 2
+    # a local original still copies even after Photos gave up
+    path, ok, note = fmp.stage_match(FakePhoto(), cfg, download=True, photos_ok=False)
+    assert path is not None and path.exists() and ok is False

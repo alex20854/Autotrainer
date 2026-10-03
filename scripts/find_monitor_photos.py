@@ -356,6 +356,31 @@ def export_original(photo, dest: Path, download: bool, timeout_s: float | None =
     return _guard_write(Path(out[0]))   # re-check what export actually wrote
 
 
+def stage_match(photo, cfg: dict, download: bool, *, photos_ok: bool = True):
+    """Export one match into the inbox -> (path | None, photos_ok, note).
+
+    photos_ok turns False the first time Photos fails to answer in time:
+    the cause is systemic (macOS never showed its automation prompt, or
+    Photos is busy), so the remaining iCloud-only matches are recorded as
+    pending at once instead of each waiting out the deadline."""
+    if not photo.path and download and not photos_ok:
+        return None, False, "skipped: Photos did not answer earlier in this run; recorded as pending"
+    try:
+        path = export_original(photo, INBOX_DIR, download, cfg.get("export_timeout_s"))
+    except UnsafeWrite:
+        raise   # a safety violation stops the run; never logged-and-continued
+    except ExportTimeout as e:
+        return None, False, (f"{e} — macOS never showed its 'control Photos' prompt for this process, or "
+                             "Photos is busy. Run once from Terminal.app to get the prompt, grant it under "
+                             "System Settings -> Privacy & Security -> Automation, or turn on Photos > "
+                             "Settings > iCloud > 'Download Originals to this Mac'; recorded as pending")
+    except Exception as e:  # noqa: BLE001 — one bad photo must not end the run
+        return None, photos_ok, f"EXPORT FAILED: {e}"
+    if path is None:
+        return None, photos_ok, "original not local (run without --no-download to fetch it); recorded as pending"
+    return path, photos_ok, ""
+
+
 def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download: bool) -> int:
     import osxphotos
     from osxphotos.photosdb import PhotosDBReadError
@@ -416,25 +441,16 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
         print(f"  {len(via_photos)} original(s) live only in iCloud and will be fetched through "
               f"Photos (up to {cfg['export_timeout_s']}s each) — if macOS asks to allow control "
               "of Photos, click OK", flush=True)
+    photos_ok = True
     for photo, score, hits in matches:
         label = f"score {score}" if score is not None else f"album '{album}'"
         line = f"  {photo.uuid}  {photo.date:%Y-%m-%d %H:%M}  {label}  [{', '.join(hits)}]"
         if dry_run:
             print(line)
             continue
-        try:
-            path = export_original(photo, INBOX_DIR, download, cfg.get("export_timeout_s"))
-        except UnsafeWrite:
-            raise   # a safety violation stops the run; never logged-and-continued
-        except ExportTimeout as e:
-            path = None
-            print(f"{line}  {e} — allow automation of Photos (System Settings -> Privacy & "
-                  "Security -> Automation) or re-run with --no-download; recorded as pending",
-                  file=sys.stderr, flush=True)
-        except Exception as e:
-            path = None
-            print(f"{line}  EXPORT FAILED: {e}", file=sys.stderr)
+        path, photos_ok, note = stage_match(photo, cfg, download, photos_ok=photos_ok)
         if path is None:
+            print(f"{line}  {note}", file=sys.stderr, flush=True)
             not_local += 1
             still_pending.append(photo.uuid.upper())
             continue

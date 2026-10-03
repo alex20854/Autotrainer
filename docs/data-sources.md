@@ -110,3 +110,30 @@ detail capture of the same piece.
   `privacy_check --strip-gps` leaves it in place by design.
 - Apple Fitness / Health **screenshots** of a workout are not monitor photos:
   the Health export already carries that data, and they can show a map.
+
+## Computed metrics (`compute_metrics.py`)
+
+Not an input, but its numbers come straight from the HR and watts series
+above, and two of its readings changed (schema.md, session `computed:`).
+
+- **Zones are contiguous.** The shipped band tables were integer percents
+  (`z2 [0.85, 0.89]`, `z3 [0.90, 0.94]` ...) read literally with an exclusive
+  upper bound, so HR between 89–90%, 94–95% and 99–100% of LTHR counted in no
+  zone (at LTHR 160: 142.4–144, 150.4–152 and 158.4–160 bpm) — a sizeable
+  share of a steady session that sits near a zone edge. Each zone now runs up
+  to the next zone's start; lower bounds are unchanged. Overlaps or gaps wider
+  than rounding warn once.
+- **Decoupling is windowed and modality-gated.** It used to be computed for
+  every session with HR (walks included) over the whole session, warm-up
+  included, and for every session without a watts series (all Watch-only
+  ones) the value was heart-rate drift labelled as decoupling. Now:
+  allowlisted modalities only, the warm-up skipped, a minimum window (ending
+  at the session's end when the HR trace reaches it), null with
+  `not_steady` when a watts series shows work bouts, and `decoupling_method`
+  says whether the number is `pw_hr` or `hr_drift`. C2 split watts are
+  weighted by the time each split covers. Watch-only sessions read
+  `hr_drift`, and can't be checked for steadiness — only Tier 1 steady
+  sessions make a meaningful drift trend.
+- **Historical values shift at the next ingest** (metrics are recomputed every
+  run): zone totals rise toward the full HR duration, and short or non-steady
+  sessions lose their decoupling value (null with `decoupling_note`).

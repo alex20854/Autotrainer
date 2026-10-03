@@ -74,6 +74,8 @@ def index_line(fm: dict, path: Path) -> dict:
         "compliance_score": compliance.get("score"),
         "tiz_z2_s": tiz.get("z2"),
         "decoupling_pct": computed.get("decoupling_pct"),
+        "decoupling_method": computed.get("decoupling_method"),
+        "decoupling_note": computed.get("decoupling_note"),
         "efficiency_factor": computed.get("efficiency_factor"),
         "file": _repo_rel(path),
     }

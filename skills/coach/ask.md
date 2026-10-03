@@ -19,6 +19,14 @@ evidence base — not generic fitness content.
   consensus"); distinguish them per the SKILL.md voice.
 - Personal data beats population claims: if their decoupling trend says the
   base isn't there yet, say that over what a study average would predict.
+- Decoupling in the index carries `decoupling_method`: `hr_drift` is
+  heart-rate drift without a power trace, not decoupling — don't compare it
+  with the 5% decoupling convention or call it decoupling. Read decoupling
+  or drift trends only from steady (Tier 1) sessions. A null always carries
+  `decoupling_note`: `window_too_short` means the session was too short to
+  judge durability (steady sessions of 30+ minutes are needed);
+  `modality_excluded`, `not_steady` (intervals) and `insufficient_samples`
+  mean not measured. None of them is a failure.
 - Programming changes requested mid-week: small swaps are fine (write them
   into the plan file with a note); structural changes go through
   `/coach review`'s adjustment step.

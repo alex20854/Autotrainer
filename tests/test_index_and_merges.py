@@ -17,6 +17,7 @@ def _session_fm(sid, date, start, modality="bikeerg"):
         "match_confidence": 1.0, "match_method": "auto", "prescription_id": None,
         "compliance": {"tier": 1, "score": 0.9, "components": {}},
         "computed": {"time_in_zone": {"z2": 1500}, "decoupling_pct": 3.0,
+                     "decoupling_method": "hr_drift", "decoupling_window_s": 1200,
                      "efficiency_factor": 1.38},
     }
 
@@ -25,9 +26,11 @@ def test_build_index(tmp_path):
     sessions = tmp_path / "sessions"
     frontmatter.save(sessions / "2026" / "2026-08-05-bikeerg.md",
                      _session_fm("2026-08-05-bikeerg", "2026-08-05", "2026-08-05T06:00:00-04:00"))
-    frontmatter.save(sessions / "2026" / "2026-08-04-rowerg.md",
-                     _session_fm("2026-08-04-rowerg", "2026-08-04", "2026-08-04T06:00:00-04:00",
-                                 modality="rowerg"))
+    short = _session_fm("2026-08-04-rowerg", "2026-08-04", "2026-08-04T06:00:00-04:00",
+                        modality="rowerg")
+    short["computed"] = {"decoupling_pct": None, "decoupling_note": "window_too_short",
+                         "decoupling_window_s": 600}
+    frontmatter.save(sessions / "2026" / "2026-08-04-rowerg.md", short)
     index_path = tmp_path / "index.jsonl"
     count, errors = bi.build(sessions, index_path, strict=True)
     assert count == 2 and errors == []
@@ -36,6 +39,12 @@ def test_build_index(tmp_path):
     assert lines[1]["tiz_z2_s"] == 1500
     assert lines[1]["compliance_score"] == 0.9
     assert lines[1]["source_kinds"] == ["health"]
+    assert lines[1]["decoupling_pct"] == 3.0
+    assert lines[1]["decoupling_method"] == "hr_drift"
+    assert lines[1]["decoupling_note"] is None
+    # a null says why, so "too short to judge" is readable from the index alone
+    assert lines[0]["decoupling_pct"] is None and lines[0]["decoupling_method"] is None
+    assert lines[0]["decoupling_note"] == "window_too_short"
 
 
 def test_build_index_strict_catches_violations(tmp_path):

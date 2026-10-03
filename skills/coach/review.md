@@ -30,6 +30,15 @@ day/modality; set `prescription_id` on the session). Score into `compliance:`:
 - **Tier 1** (continuous): components = duration vs target, % time-in-zone
   (HR or watts band), decoupling (<5% good). Fully computed — read
   `computed:`, never eyeball raw data.
+  Read `computed.decoupling_method` before the number: `pw_hr` is power:HR
+  decoupling and the <5% convention applies; `hr_drift` is heart-rate drift
+  only (no power trace) — report it as HR drift, never score it against the
+  5% decoupling convention. Any `decoupling_pct: null` means not measured —
+  never a failed component; leave decoupling out of that score. The
+  `decoupling_note` says why: `window_too_short` = too short to judge
+  durability (steady sessions of 30+ minutes are needed); `modality_excluded`,
+  `not_steady` (the watts trace shows work bouts) or `insufficient_samples`
+  (HR dropout).
 - **Tier 2** (intervals): interval structure from machine watts/splits where
   present (`computed.bouts`, C2 splits), HR trace *shape* secondarily
   (bout count, plateaus, recovery dips). Bouts < 2 min: machine metrics only.

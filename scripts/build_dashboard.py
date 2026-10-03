@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import html
 import json
+import math
 import re
 import sys
 from pathlib import Path
@@ -23,6 +24,7 @@ import yaml
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import frontmatter, records
 from lib import workspace
+import compute_metrics
 
 REPO_ROOT = workspace.root()
 OUT_PATH = REPO_ROOT / "dashboard.html"
@@ -303,7 +305,12 @@ def build() -> str:
     power = (config.get("power") or {}).get("bikeerg") or {}
     lthr, ftp = athlete.get("lthr"), power.get("ftp")
     ceiling = power.get("z2_watts_ceiling")
-    z2 = f"{round(lthr*0.85)}–{round(lthr*0.89)}" if lthr else "—"
+    bands, zones_source = compute_metrics.zone_bounds(config)
+    z2 = "—"
+    if zones_source == "lthr" and "z2" in bands:
+        # whole bpm inside [lo, hi): the resolved, contiguous band
+        z2_lo, z2_hi = bands["z2"]
+        z2 = f"{math.ceil(z2_lo)}–{math.ceil(z2_hi) - 1}"
     data_through = max((s["date"] for s in index), default="—")
 
     last7 = [s for s in index if s["date"] > _shift(data_through, -7)]
@@ -328,11 +335,26 @@ def build() -> str:
     watt_pts = [(s["date"][5:], s["watts_avg"],
                  f"{s['date']}  {s['watts_avg']} W avg\n{round((s['duration_s'] or 0)/60)} min")
                 for s in index if s["modality"] == "bikeerg" and s.get("watts_avg")]
-    dec_pts = [(s["date"][5:], s["decoupling_pct"],
-                f"{s['date']}  {s['decoupling_pct']}% decoupling\n{s['modality']}, "
-                f"{round((s['duration_s'] or 0)/60)} min")
-               for s in index if s.get("decoupling_pct") is not None
-               and s["modality"] not in ("walk",)]
+    # power:HR decoupling and HR drift never share a chart: only pw_hr points
+    # are read against the 5% line; HR drift gets its own unreferenced card
+    def _dec_pts(power: bool):
+        return [(s["date"][5:], s["decoupling_pct"],
+                 f"{s['date']}  {s['decoupling_pct']}% {'decoupling' if power else 'HR drift'}\n"
+                 f"{s['modality']}, {round((s['duration_s'] or 0)/60)} min")
+                for s in index if s.get("decoupling_pct") is not None
+                and (s.get("decoupling_method") == "pw_hr") == power]
+    pw_pts, drift_pts = _dec_pts(True), _dec_pts(False)
+    dec_cards = ""
+    if pw_pts:
+        dec_cards += ('<div class="card"><h2>Aerobic decoupling per session</h2>\n'
+                      '<div class="d">power:HR, after the warm-up; under 5% = solid aerobic '
+                      'durability for that duration</div>\n'
+                      + dot_line_chart(pw_pts, fmt="{:.0f}", refs=[(5, "5%")]) + "</div>")
+    if drift_pts or not pw_pts:
+        dec_cards += ('<div class="card"><h2>HR drift per session</h2>\n'
+                      '<div class="d">second-half vs first-half heart rate after the warm-up — '
+                      'true power:HR decoupling needs a power trace</div>\n'
+                      + dot_line_chart(drift_pts, fmt="{:.0f}") + "</div>")
 
     zones = ["z1", "z2", "z3", "z4", "z5"]
     weeks: dict[str, dict] = {}
@@ -354,12 +376,17 @@ def build() -> str:
                   f"{b['week']}  {b['minutes']} min, {b['count']} walks")
                  for b in baseline]
 
+    def _dec_cell(s):
+        if s.get("decoupling_pct") is None:
+            return "—"
+        return f"{s['decoupling_pct']}" + ("" if s.get("decoupling_method") == "pw_hr" else " (HR)")
+
     sess_rows = "".join(
         f"<tr><td>{s['date']}</td><td>{s['modality']}</td>"
         f"<td>{round((s['duration_s'] or 0)/60)} min</td>"
         f"<td>{s['hr_avg'] or '—'}</td><td>{s['watts_avg'] or '—'}</td>"
         f"<td>{s['efficiency_factor'] or '—'}</td>"
-        f"<td>{s['decoupling_pct'] if s['decoupling_pct'] is not None else '—'}</td>"
+        f"<td>{_dec_cell(s)}</td>"
         f"<td>{s['compliance_score'] if s['compliance_score'] is not None else '—'}</td></tr>"
         for s in sorted(index, key=lambda s: s["date"], reverse=True)[:12])
     def _clip(text, n=100):
@@ -390,9 +417,7 @@ def build() -> str:
 <div class="d">HR time-in-zone across training sessions (zones from LTHR {lthr or "—"})</div>
 {stacked_bar_chart(zone_rows, zones, zone_colors)}
 <div class="legend">{zone_legend}</div></div>
-<div class="card"><h2>Aerobic decoupling per session</h2>
-<div class="d">under 5% = solid aerobic durability for that duration</div>
-{dot_line_chart(dec_pts, fmt="{:.0f}", refs=[(5, "5%")])}</div>
+{dec_cards}
 <div class="card"><h2>Baseline activity</h2>
 <div class="d">unstructured movement (walks) — tracked, never scored</div>
 {stacked_bar_chart(base_rows, ["m"], {"m": "var(--base)"})}</div>
@@ -401,7 +426,7 @@ def build() -> str:
 <table><tr><th>date</th><th>test</th><th>result</th></tr>{bench_rows}</table></div>
 <div class="card full"><h2>Recent sessions</h2>
 <table><tr><th>date</th><th>modality</th><th>dur</th><th>HR</th><th>watts</th>
-<th>EF</th><th>dec %</th><th>score</th></tr>{sess_rows}</table></div>
+<th>EF</th><th title="power:HR decoupling; (HR) = heart-rate drift, no power trace">dec %</th><th>score</th></tr>{sess_rows}</table></div>
 </div>
 <p class="foot">Generated by scripts/build_dashboard.py — a pure rendering of
 data/index.jsonl, data/baseline.jsonl, config/athlete.yaml and benchmarks.md.

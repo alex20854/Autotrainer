@@ -45,7 +45,11 @@ compliance:                           # written by Claude during /coach review
   components: {duration: 1.0, time_in_zone: 0.88, decoupling_ok: true}
 computed:                             # written by scripts/compute_metrics.py
   time_in_zone: {z1: 120, z2: 2380, z3: 240, z4: 0, z5: 0}   # seconds, HR zones
-  decoupling_pct: 3.1                 # Pw:HR first-half vs second-half EF drift
+  zones_source: lthr                  # lthr | bootstrap (0.9 x hr_max) | unconfigured
+  decoupling_pct: 3.1                 # % second half vs first, after the warm-up; null = not measured
+  decoupling_method: pw_hr            # pw_hr (watts/HR) | hr_drift (HR alone); absent when null
+  decoupling_window_s: 2201           # seconds measured (warm-up end -> session end); absent for modality_excluded
+  # decoupling_note: window_too_short # present only when decoupling_pct is null (see below)
   efficiency_factor: 1.40             # avg watts / avg HR
   bouts: 4                            # detected work bouts (Tier 2), omitted for steady state
 ---
@@ -61,6 +65,33 @@ Rules:
   sources are normal (spec §5: best available evidence).
 - `compliance` is only ever written by Claude (judgment). `computed` is only
   ever written by `compute_metrics.py` (math). Scripts never touch `compliance`.
+- **Time-in-zone** uses contiguous bands: zones sorted by lower bound, each
+  running up to (not including) the next zone's lower bound, the top zone
+  open-ended. That is the faithful reading of integer-percent tables ("85–89%"
+  means everything below 90%); every HR sample lands in exactly one zone, so
+  zone totals equal the HR trace duration (gaps capped at 30 s). Overlapping
+  bands, or gaps wider than the 0.01 rounding gap, warn on stderr.
+- **Decoupling** is measured only for modalities in
+  `metrics.decoupling_modalities` (default: all but walk, treadmill-walk, sled,
+  mixed), over `[start + decoupling_warmup_s, end]` split in half (defaults
+  600 s warm-up, 1200 s minimum window — engineering defaults, not a cited
+  standard). `end` is the session's `duration_s` when the HR trace reaches
+  within 30 s of it (so a 30:07 ride whose last 5-s sample lands at 29:59
+  still counts as 30 minutes), else the last HR sample. `pw_hr` = efficiency
+  (watts/HR) lost from the first half to the second, when a watts series
+  covers at least 90% of each half; each watts sample holds since the
+  previous one (a C2 split's average watts is stamped at its end), weighted by
+  time per half. `hr_drift` = second-half vs first-half average HR, which
+  equals decoupling only if output was held constant (unverifiable without a
+  power trace). Positive = HR rose relative to output. A null value carries
+  `decoupling_note` and has no `decoupling_method`: `modality_excluded` (no
+  `decoupling_window_s` either), `window_too_short` (too short to judge
+  durability — not a failure), `not_steady` (the watts series shows work
+  bouts after the warm-up — the same detection as `bouts`, 60 s+ above
+  1.15 x average watts, a heuristic), or `insufficient_samples` (a half has
+  under 5 HR samples, e.g. a dropout). HR-only sessions can't be checked for
+  steadiness, which is one more reason `hr_drift` is not decoupling. These
+  fields are recomputed on every ingest, so adding them needed no migration.
 
 ### Modality vocabulary
 
@@ -114,9 +145,16 @@ the frontmatter scalars flattened:
  "duration_s": 0, "hr_avg": 0, "hr_max": 0, "watts_avg": 0, "distance_m": 0,
  "kcal": 0, "source_kinds": ["health", "photo"], "match_confidence": 0.95,
  "prescription_id": null, "tier": 1, "compliance_score": 0.92,
- "tiz_z2_s": 2380, "decoupling_pct": 3.1, "efficiency_factor": 1.4,
+ "tiz_z2_s": 2380, "decoupling_pct": 3.1, "decoupling_method": "pw_hr",
+ "decoupling_note": null, "efficiency_factor": 1.4,
  "file": "data/sessions/2026/2026-08-08-bikeerg-z2.md"}
 ```
+
+`decoupling_method` travels with `decoupling_pct` (`pw_hr` | `hr_drift` |
+null) so an HR-drift value is never read as power:HR decoupling, and
+`decoupling_note` says why a null is null (`modality_excluded` |
+`window_too_short` | `not_steady` | `insufficient_samples`; null when a value
+exists) so "too short to judge" is readable without opening the session.
 
 Claude answers whole-history questions from this file, not by opening sessions.
 

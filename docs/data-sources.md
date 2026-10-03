@@ -88,7 +88,11 @@ detail capture of the same piece.
   are recorded as pending and retried. macOS's permission prompt blocks the
   export call indefinitely, so the finder waits `photo_finder.export_timeout_s`
   (default 180 s) per such original, then records it as pending and moves on,
-  saying why.
+  saying why. macOS shows that prompt only to a real app: a shell inside another
+  app's panel (an IDE or chat terminal) never gets it and would block forever,
+  so run the finder once from Terminal.app to grant Photos automation, or use
+  `--no-download` and sweep the pending iCloud-only originals from Terminal.app
+  later. After one timeout a run stops trying Photos for its remaining matches.
 - Vision OCR misreads LCD consoles predictably (`watt` → `wyatt`, `Walt`,
   `W30t`); the scorer's loose patterns and penalties for receipts, nutrition
   labels, social-app chrome and Fitness-app summaries are tuned on real hits.

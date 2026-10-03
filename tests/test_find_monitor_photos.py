@@ -236,8 +236,22 @@ def test_only_read_only_photos_api_is_used():
 
 
 
-def test_resolve_library_explicit_must_exist_and_wins(tmp_path, monkeypatch):
-    import osxphotos.utils as u
+@pytest.fixture
+def osx_utils(monkeypatch):
+    """A stand-in `osxphotos.utils` so the lookup ordering is exercised anywhere
+    (osxphotos is macOS-only; CI also runs on Linux). resolve_library imports
+    `from osxphotos import utils` lazily, so the stub is what it sees."""
+    import types
+    pkg, utils = types.ModuleType("osxphotos"), types.ModuleType("osxphotos.utils")
+    pkg.utils = utils
+    utils.get_last_library_path = utils.get_system_library_path = lambda: None
+    monkeypatch.setitem(sys.modules, "osxphotos", pkg)
+    monkeypatch.setitem(sys.modules, "osxphotos.utils", utils)
+    return utils
+
+
+def test_resolve_library_explicit_must_exist_and_wins(tmp_path, monkeypatch, osx_utils):
+    u = osx_utils
     boom = lambda: (_ for _ in ()).throw(ValueError("broken plist"))
     monkeypatch.setattr(u, "get_last_library_path", boom)     # must never even be called
     monkeypatch.setattr(u, "get_system_library_path", boom)
@@ -248,8 +262,8 @@ def test_resolve_library_explicit_must_exist_and_wins(tmp_path, monkeypatch):
         fmp.resolve_library(tmp_path / "typo.photoslibrary")   # never falls back to another library
 
 
-def test_resolve_library_discovery_is_lazy_guarded_and_ordered(tmp_path, monkeypatch):
-    import osxphotos.utils as u
+def test_resolve_library_discovery_is_lazy_guarded_and_ordered(tmp_path, monkeypatch, osx_utils):
+    u = osx_utils
     system = tmp_path / "System.photoslibrary"; system.mkdir()
     monkeypatch.setattr(u, "get_last_library_path", lambda: (_ for _ in ()).throw(ValueError("broken plist")))
     monkeypatch.setattr(u, "get_system_library_path", lambda: str(system))

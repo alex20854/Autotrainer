@@ -1,0 +1,42 @@
+# Engine CI: unit + synthetic-fixture tests on Linux and macOS, and the
+# repo-wide privacy audit. Integration tests that need a real athlete
+# workspace skip here (no AUTOTRAINER_WORKSPACE, no sibling checkout).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]   # osxphotos installs on macOS only (requirements.txt marker)
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python -m pytest tests -q
+
+  privacy:
+    # No config/privacy.local.yaml in CI, so this is the regex-only audit
+    # (addresses, phones, emails, EXIF, location formats) of every tracked file.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - run: python scripts/privacy_check.py

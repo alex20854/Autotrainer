@@ -42,6 +42,7 @@ lives in a separate **workspace** repo.
 /coach plan     # write next week's prescriptions
 /coach review   # weekly: compliance scores, trends, adjustments
 /coach ask      # anything, grounded in your ledger
+/coach adapt    # life happened: a layoff, missed sessions, illness, travel, a new machine
 ```
 
 ## Feeding it data (workspace paths)
@@ -69,6 +70,13 @@ copy as a private claude.ai artifact.
 
 ## Development
 
+[![CI](https://github.com/alex20854/Autotrainer/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/alex20854/Autotrainer/actions/workflows/ci.yml)
+
+CI runs the unit and synthetic-fixture tests on Linux and macOS (no athlete
+workspace, osxphotos only on macOS) plus the repo-wide privacy audit on every
+push and pull request to `main`. Integration tests against a real workspace
+stay local: they need your private training data, so they skip in CI.
+
 ```
 python3 -m pytest tests/
 git config core.hooksPath scripts/githooks
@@ -77,5 +85,8 @@ cp config/privacy.local.yaml.example config/privacy.local.yaml   # then add your
 
 Integration tests run against `$AUTOTRAINER_WORKSPACE` (or a sibling
 `../Autotrainer_Alex`) and skip when none is present. The pre-commit hook
-blocks GPS/owner EXIF, addresses, phone numbers, personal emails, and your
-listed personal strings — in this repo and in workspaces that use it.
+blocks GPS/owner EXIF, location files (GPX/KML/GeoJSON, compressed or not;
+TCX with positions; FIT, compressed files and archives unless allow-listed),
+coordinates in JSON/JS/HTML, addresses, phone numbers,
+personal emails, and your listed personal strings — in this repo and in
+workspaces that use it.

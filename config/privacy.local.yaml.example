@@ -9,3 +9,8 @@ never_commit:
   - "555-555-5555"
   - "Your Employer"
   - "Name Of Your Gym"
+
+# Binary activity files (.fit) can carry GPS and cannot be inspected; list each
+# reviewed one by its repo-relative path to let it be committed.
+allow_files: []
+#  - data/raw/c2/example-indoor-row.fit

@@ -69,6 +69,15 @@ Two shapes: summary rows (one per workout) and per-stroke detail files.
 Both go through `upsert_record`, so a summary never overwrites a richer
 detail capture of the same piece.
 
+## Location-bearing formats (blocked)
+
+Nothing that can carry a route enters git. `privacy_check.py` fails on GPX,
+KML, KMZ and GeoJSON files outright, on TCX files containing position
+elements, on FIT files unless a reviewed file is listed under `allow_files`
+in the gitignored `config/privacy.local.yaml` (FIT is binary and cannot be
+inspected), and on latitude/longitude values in JSON. Indoor-machine exports
+normally have no positions; when a source offers a choice, prefer CSV.
+
 ## Monitor photos (`data/raw/photos/`, `find_monitor_photos.py`)
 
 - EXIF time is the matching key, compared as an absolute instant using the

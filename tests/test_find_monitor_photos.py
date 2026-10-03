@@ -315,3 +315,10 @@ def test_after_one_photos_timeout_the_rest_are_recorded_pending_without_waiting(
     # a local original still copies even after Photos gave up
     path, ok, note = fmp.stage_match(FakePhoto(), cfg, download=True, photos_ok=False)
     assert path is not None and path.exists() and ok is False
+
+
+
+def test_deferred_backend_imports_resolve():
+    pytest.importorskip("osxphotos")
+    osxphotos, read_error, strip_photo = fmp._photos_backend()
+    assert issubclass(read_error, Exception) and callable(strip_photo) and hasattr(osxphotos, "PhotosDB")

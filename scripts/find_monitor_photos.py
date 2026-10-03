@@ -381,10 +381,18 @@ def stage_match(photo, cfg: dict, download: bool, *, photos_ok: bool = True):
     return path, photos_ok, ""
 
 
-def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download: bool) -> int:
+def _photos_backend():
+    """The deferred imports scan() needs (osxphotos is macOS-only and slow to
+    import). Kept in one tested function so a wrong import path can't hide
+    inside a code path the tests never reach."""
     import osxphotos
-    from osxphotos.photosdb import PhotosDBReadError
+    from osxphotos.photosdb.photosdb import PhotosDBReadError
     from privacy_check import strip_photo
+    return osxphotos, PhotosDBReadError, strip_photo
+
+
+def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download: bool) -> int:
+    osxphotos, PhotosDBReadError, strip_photo = _photos_backend()
 
     library = resolve_library(cfg.get("library"))
     try:

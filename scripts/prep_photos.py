@@ -7,8 +7,10 @@ and extracted: false. Claude fills in the vision fields during /coach ingest.
 HEIC originals get a JPEG copy in data/derived/photos_converted/ (Claude's
 vision reads JPEG/PNG, not HEIC); raw files are never modified.
 
-EXIF DateTimeOriginal is naive local time — the matching layer interprets it
-in config/athlete.yaml's timezone (docs/schema.md, Timezone rules).
+EXIF DateTimeOriginal is written with its UTC offset when the camera recorded
+one (OffsetTimeOriginal — iPhones do), so a photo taken while traveling still
+lands on its workout; without one it stays naive local time, which the matcher
+reads as the workout's local time (docs/schema.md, Timezone rules).
 
 Requires Pillow + pillow-heif (requirements.txt). On a Mac without them,
 `sips -s format jpeg in.heic --out out.jpg` is the manual fallback.
@@ -20,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import re
 from pathlib import Path
 
 import yaml
@@ -38,19 +41,32 @@ CONVERTED_DIR = REPO_ROOT / "data" / "derived" / "photos_converted"
 
 PHOTO_EXTS = {".jpeg", ".jpg", ".png", ".heic", ".heif"}
 DATETIME_ORIGINAL = 0x9003
+OFFSET_TIME_ORIGINAL = 0x9011   # UTC offset for DateTimeOriginal, e.g. "-07:00"
+OFFSET_TIME = 0x9010            # UTC offset for the 0th-IFD DateTime fallback
 EXIF_IFD = 0x8769
+OFFSET_RE = re.compile(r"[+-]\d{2}:\d{2}")
 
 
 def exif_datetime(im: Image.Image) -> str | None:
+    """Capture time as ISO 8601: tz-aware when the camera recorded a UTC
+    offset, else naive local time. The absolute instant is what matching
+    needs — the Watch keeps recording in the home offset while a photo taken
+    on a trip carries the local one."""
     exif = im.getexif()
     if not exif:
         return None
-    value = exif.get_ifd(EXIF_IFD).get(DATETIME_ORIGINAL) or exif.get(ExifTags.Base.DateTime)
+    ifd = exif.get_ifd(EXIF_IFD)
+    value = ifd.get(DATETIME_ORIGINAL)
+    offset = ifd.get(OFFSET_TIME_ORIGINAL)
+    if not value:
+        value, offset = exif.get(ExifTags.Base.DateTime), ifd.get(OFFSET_TIME)
     if not value:
         return None
-    # EXIF format "YYYY:MM:DD HH:MM:SS" -> ISO naive
+    # EXIF format "YYYY:MM:DD HH:MM:SS" -> ISO
     date, _, time = str(value).partition(" ")
-    return f"{date.replace(':', '-')}T{time}"
+    iso = f"{date.replace(':', '-')}T{time}"
+    offset = str(offset or "").strip()
+    return iso + offset if OFFSET_RE.fullmatch(offset) else iso
 
 
 def prep_photo(photo: Path, force: bool = False) -> dict | None:

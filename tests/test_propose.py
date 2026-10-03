@@ -229,3 +229,40 @@ def test_min_session_is_configurable():
                     "2026-08-07T07:00:00-04:00", "2026-08-07T07:04:00-04:00", 240)
     assert pm.propose([short], [], set(), MATCHING, classification={"min_session_s": 300})["too_short"]
     assert not pm.propose([short], [], set(), MATCHING, classification={"min_session_s": 120})["too_short"]
+
+
+def test_travel_photo_matches_on_the_absolute_instant():
+    # synthetic: the Watch records in the home offset (-05:00); the photo carries the
+    # offset where it was taken (-08:00), six seconds after the workout ended
+    w = workout("health-travel", "Elliptical", "2026-03-02T11:20:00-05:00", "2026-03-02T11:48:30-05:00", 1710)
+    aware = sidecar("travel.yaml", "elliptical", "2026-03-02T08:48:36-08:00", elapsed=1700)
+    conf, notes = pm.score_pair(w, aware, MATCHING)
+    assert conf >= 0.9 and any("6s after workout end" in n for n in notes), notes
+    # the same clock reading without its offset is read as home time: three hours early, no match
+    naive = sidecar("travel-naive.yaml", "elliptical", "2026-03-02T08:48:36", elapsed=1700)
+    assert pm.score_pair(w, naive, MATCHING)[0] == 0.0
+
+
+def test_aware_photo_pairs_with_offsetless_c2_record_without_crashing():
+    # C2 CSV records carry no UTC offset; every iPhone photo now does
+    c2 = workout("c2-row", "c2-bikeerg", "2026-07-29T18:10:36", "2026-07-29T18:35:36", 1500)
+    photo = sidecar("c2photo.yaml", "concept2-bikeerg", "2026-07-29T18:36:00-04:00", elapsed=1500)
+    # no TypeError; with the console's C2 type listed in modality_map it auto-merges
+    matching = {**MATCHING, "modality_map": {**MATCHING["modality_map"],
+                "concept2-bikeerg": [*MATCHING["modality_map"]["concept2-bikeerg"], "c2-bikeerg"]}}
+    assert pm.score_pair(c2, photo, matching)[0] >= 0.9
+    result = pm.propose([c2], [photo], set(), matching)
+    assert [c["kind"] for c in result["auto_merge"]] == ["pair"]
+    # without it the pair is still scored, just held for review as "modality unusual"
+    held = pm.propose([c2], [photo], set(), MATCHING)["ambiguous"]
+    assert [c["kind"] for c in held] == ["pair"] and held[0]["confidence"] == 0.75
+
+
+def test_datetime_exif_time_is_normalized_and_serializable():
+    import json
+    from datetime import datetime
+    # what yaml.safe_load returns for an unquoted ISO timestamp in a hand-edited sidecar
+    sc = dict(P1, exif_time=datetime.fromisoformat("2026-08-05T06:33:00-04:00"))
+    assert pm.score_pair(W1, sc, MATCHING)[0] >= 0.9
+    orphan = pm.propose([], [sc], set(), MATCHING)
+    json.dumps(orphan)   # the orphan_photo case must not carry a datetime through

@@ -71,8 +71,10 @@ detail capture of the same piece.
 
 ## Monitor photos (`data/raw/photos/`, `find_monitor_photos.py`)
 
-- EXIF time is the matching key, interpreted in `athlete.timezone`; the
-  photo must fall in `[start, end + photo_window_after_end_s]` of a workout.
+- EXIF time is the matching key, compared as an absolute instant using the
+  photo's own offset (a naive value is read in the workout's offset; when the
+  workout has none either, e.g. a C2 CSV, wall clocks are compared). The photo
+  must fall in `[start, end + photo_window_after_end_s]` of a workout.
 - Photos usually arrive **after** the Health record has become a session;
   Health-only auto sessions are therefore upgradable in place (schema.md).
 - The finder needs **Full Disk Access** for the app running it; originals
@@ -82,5 +84,12 @@ detail capture of the same piece.
 - Vision OCR misreads LCD consoles predictably (`watt` → `wyatt`, `Walt`,
   `W30t`); the scorer's loose patterns and penalties for receipts, nutrition
   labels, social-app chrome and Fitness-app summaries are tuned on real hits.
+- **Travel:** the Watch keeps recording in the home offset (Auto Export stamps
+  the source time zone) while the photo's EXIF carries the local offset where
+  it was taken (`OffsetTimeOriginal: -07:00`). `prep_photos` keeps that offset
+  in `exif_time`; read as home time, the photo would sit hours from its
+  workout and surface as an orphan. The offset reveals only a time zone — far
+  coarser than the location data the privacy rules exclude — and
+  `privacy_check --strip-gps` leaves it in place by design.
 - Apple Fitness / Health **screenshots** of a workout are not monitor photos:
   the Health export already carries that data, and they can show a map.

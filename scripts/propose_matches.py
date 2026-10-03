@@ -86,9 +86,15 @@ def score_pair(workout: dict, sidecar: dict, matching: dict) -> tuple[float, lis
     exif = sidecar.get("exif_time")
     if not exif:
         return 0.0, ["photo has no EXIF timestamp"]
-    photo_dt = datetime.fromisoformat(exif)
+    # tz-aware when the camera recorded an offset (travel-safe); a hand-written
+    # unquoted sidecar value arrives from YAML as a datetime already
+    photo_dt = exif if isinstance(exif, datetime) else datetime.fromisoformat(str(exif))
     if photo_dt.tzinfo is None and start.tzinfo is not None:
-        photo_dt = photo_dt.replace(tzinfo=start.tzinfo)  # EXIF is local time
+        photo_dt = photo_dt.replace(tzinfo=start.tzinfo)  # naive EXIF: the workout's local time
+    elif photo_dt.tzinfo is not None and start.tzinfo is None:
+        # workout without an offset (C2 CSV): compare wall clocks — the photo was
+        # taken where the machine is, so its local clock is the machine's clock
+        photo_dt = photo_dt.replace(tzinfo=None)
 
     window_end_s = matching.get("photo_window_after_end_s", 600)
     if not (start <= photo_dt <= end + _td(window_end_s)):
@@ -178,6 +184,9 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
     workouts = [w for w in workouts if (w.get("duration_s") or 0) >= min_s]
     sidecars = [s for s in sidecars if s["_sidecar_path"] not in claimed
                 and s.get("extracted")]
+    for s in sidecars:  # an unquoted ISO timestamp in hand-edited YAML loads as a datetime
+        if isinstance(s.get("exif_time"), datetime):
+            s["exif_time"] = s["exif_time"].isoformat()
 
     # score all cross pairs
     pair_scores = []

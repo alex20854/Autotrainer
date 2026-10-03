@@ -15,7 +15,7 @@ athlete:
   weight_kg: null
   lthr: null                # bpm; lactate threshold HR from a field test
   maf_cap: null             # bpm; 180-age adjusted, if MAF-style base is used
-  timezone: "America/New_York"   # EXIF timestamps are interpreted in this zone
+  timezone: "America/New_York"   # home zone, informational (day boundaries in reports); matching compares absolute instants and never reads it
 
 # Zone model: 5 HR zones as % of LTHR (Friel-style). When lthr is null the
 # scripts fall back to % of hr_max (z2 = 60-70% etc.) and mark computed
@@ -77,12 +77,13 @@ matching:
   # Learned mapping: monitor/console machine -> plausible Apple Health workout
   # types. Lookup failures LOWER confidence, never hard-fail (spec §7).
   # /coach review appends new pairings here as they are learned.
-  # Two spellings per machine: HealthKit identifiers (export.xml backfill) and the
-  # display names Health Auto Export / the phone pull use ("Indoor Cycling").
+  # Three spellings per machine: HealthKit identifiers (export.xml backfill), the
+  # display names Health Auto Export / the phone pull use ("Indoor Cycling"), and
+  # the c2-* types parse_c2 gives Concept2 logbook rows.
   modality_map:
-    concept2-rowerg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeOther]
-    concept2-skierg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
-    concept2-bikeerg:  [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeOther, Indoor Cycling, Cycling, Other]
+    concept2-rowerg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeOther, c2-rowerg, c2-rower]
+    concept2-skierg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther, c2-skierg]
+    concept2-bikeerg:  [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeOther, Indoor Cycling, Cycling, Other, c2-bikeerg]
     airdyne:           [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther, Elliptical, Indoor Cycling, Cycling, Cross Training, Other]
     stairclimber:      [HKWorkoutActivityTypeStairClimbing, HKWorkoutActivityTypeStairs, HKWorkoutActivityTypeOther, Stair Climbing, Stairs, Other]
     versaclimber:      [HKWorkoutActivityTypeClimbing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]

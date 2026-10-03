@@ -167,7 +167,7 @@ Path: `data/derived/photos/<photo stem>.yaml`. EXIF fields are written by
 ```yaml
 photo: data/raw/photos/IMG_4231.jpeg
 converted: data/derived/photos_converted/IMG_4231.jpg   # only for HEIC originals
-exif_time: "2026-08-08T07:03:12"     # naive local time (EXIF has no zone)
+exif_time: "2026-08-08T07:03:12"     # with the camera's UTC offset; naive only if it recorded none
 extracted: true
 machine: concept2-bikeerg            # Claude's read of the console
 machine_confidence: high
@@ -217,6 +217,8 @@ came from. See the file itself for field documentation.
 ## Timezone rules
 
 - Health sources carry explicit UTC offsets → preserved as-is.
-- EXIF `DateTimeOriginal` is naive local time → interpreted in
-  `config/athlete.yaml: timezone` when matching.
-- All matching comparisons happen in local time.
+- EXIF `DateTimeOriginal` keeps its UTC offset when the camera recorded one
+  (`OffsetTimeOriginal`; iPhones do) → the sidecar `exif_time` is tz-aware and
+  a photo taken while traveling matches its workout on the absolute instant.
+  Without an offset it is naive and read as the workout's local time.
+- Matching compares absolute instants; naive values are localized first.

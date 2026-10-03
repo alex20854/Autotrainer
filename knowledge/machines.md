@@ -71,3 +71,11 @@ Entry format:
   speed from distance ÷ elapsed if needed); the pause countdown is not a
   metric; the channel list on the right ("24.3 - AMC") is not data.
 - Example photos: data/raw/photos/EEE27E9A-*.heic (pause screen)
+- Precor variant (touchscreen elliptical/AMT): metrics strip reads Total
+  Distance (mi) | Calories | **Time Remaining** (when a timed program runs —
+  elapsed = program length − remaining; the Watch duration is the better
+  authority) | Strides/Min (live) | Heart Rate (blank without contact). Two
+  small numeric displays on the lower panel are resistance/incline-type
+  levels, not metrics. A mid-workout photo has no end summary — extract what
+  is shown and mark elapsed medium confidence.
+  Example photos: data/raw/photos/7E859104-*.heic

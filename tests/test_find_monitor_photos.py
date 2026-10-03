@@ -341,3 +341,30 @@ def test_classify_reports_pending_photos_that_fell_below_threshold(monkeypatch):
     assert [m[0].uuid for m in matches] == ["ALBUM", "HIT"] and matches[0][1] is None
     assert [d[0].uuid for d in dropped] == ["OLDPEND"]          # reported, not silently gone
     assert near == [] and scanned == 4 and skipped == 2          # JUNK is simply not a match
+
+
+
+def test_match_exports_by_filename_then_capture_time():
+    from datetime import datetime, timezone
+    from types import SimpleNamespace as NS
+    from pathlib import Path
+    pending = [NS(uuid="AAAA", original_filename="IMG_0001.HEIC", date=datetime(2026, 9, 1, 9, 13, 5, tzinfo=timezone.utc)),
+               NS(uuid="BBBB", original_filename="IMG_0002.HEIC", date=datetime(2026, 9, 3, 8, 54, 0, tzinfo=timezone.utc))]
+    files = [(Path("img_0001.heic"), None),                                  # name match, case-insensitive
+             (Path("export-7.jpg"), "2026-09-03T08:54:01+00:00"),             # time match within 2 s
+             (Path("IMG_0001 (1).HEIC"), "2026-09-01T09:13:05+00:00"),       # same photo again -> unmatched
+             (Path("holiday.jpg"), "2026-07-01T10:00:00+00:00")]              # nothing
+    matched, unmatched = fmp.match_exports(files, pending)
+    assert matched == {"AAAA": Path("img_0001.heic"), "BBBB": Path("export-7.jpg")}
+    assert [p.name for p in unmatched] == ["IMG_0001 (1).HEIC", "holiday.jpg"]
+
+
+def test_adopt_files_copies_under_uuid_and_clears_pending(ws, tmp_path):
+    from PIL import Image
+    export = tmp_path / "export"; export.mkdir()
+    src = export / "IMG_0001.jpg"; Image.new("RGB", (4, 4)).save(src)
+    state = {"scanned_through": None, "promoted": [], "rejected": [], "pending": ["AAAA", "BBBB"]}
+    staged = fmp.adopt_files({"AAAA": src}, state)
+    assert [p.name for p in staged] == ["AAAA.jpg"] and (ws / "inbox" / "AAAA.jpg").exists()
+    assert src.exists()                                   # the user's export is left alone
+    assert state["pending"] == ["BBBB"]

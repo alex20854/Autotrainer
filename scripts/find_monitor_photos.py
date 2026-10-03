@@ -61,6 +61,8 @@ PHOTOS_DIR = REPO_ROOT / "data" / "raw" / "photos"
 STATE_PATH = REPO_ROOT / "data" / "derived" / "photo_finder.json"
 CONFIG_PATH = REPO_ROOT / "config" / "athlete.yaml"
 
+PHOTO_EXTS = {".jpeg", ".jpg", ".png", ".heic", ".heif"}
+
 DEFAULTS = {
     "album": "Autotrainer",     # always-stage override album
     "library": None,            # path to a .photoslibrary; default: Photos' own (see resolve_library)
@@ -226,6 +228,98 @@ def staged(uuids: list[str]) -> list[Path]:
     if missing:
         sys.exit(f"not in {INBOX_DIR}: {', '.join(sorted(missing))}")
     return found
+
+
+# ------------------------------------------------------------------- manual export fallback
+
+def match_exports(files, pending_photos, tolerance_s: float = 2.0):
+    """Pair files the user exported from Photos with pending photos.
+
+    files: [(path, exif_iso_or_None)]; pending_photos: objects with uuid,
+    original_filename and an aware date. Match by original filename first
+    (case-insensitive), else by capture time within tolerance_s — Photos keeps
+    EXIF on "Export Unmodified Original". -> ({uuid: path}, unmatched_paths)."""
+    by_name = {}
+    for p in pending_photos:
+        if p.original_filename:
+            by_name.setdefault(p.original_filename.lower(), p)
+    matched, unmatched = {}, []
+    for path, exif in files:
+        photo = by_name.get(path.name.lower())
+        if photo is None and exif:
+            taken = datetime.fromisoformat(exif)
+            for p in pending_photos:
+                ref = p.date if taken.tzinfo else p.date.replace(tzinfo=None)
+                if abs((taken - ref).total_seconds()) <= tolerance_s:
+                    photo = p
+                    break
+        if photo is None or photo.uuid in matched:
+            unmatched.append(path)
+        else:
+            matched[photo.uuid] = path
+    return matched, unmatched
+
+
+def adopt_files(matched: dict, state: dict) -> list:
+    """Copy matched exports into the inbox under their photo UUID (the user's
+    export folder is left untouched — it is outside the finder's write
+    guard), strip identifying EXIF, and clear them from pending."""
+    from privacy_check import strip_photo
+    INBOX_DIR.mkdir(parents=True, exist_ok=True)
+    staged = []
+    for uuid, src in matched.items():
+        dest = _guard_write(INBOX_DIR / f"{uuid}{src.suffix.lower()}")
+        shutil.copy2(src, dest)
+        strip_photo(_guard_write(dest))
+        staged.append(dest)
+        state["pending"] = [u for u in state.get("pending", []) if u.upper() != uuid.upper()]
+    return staged
+
+
+def _exif_iso(path: Path) -> str | None:
+    from PIL import Image
+    import pillow_heif
+    from prep_photos import exif_datetime
+    pillow_heif.register_heif_opener()
+    try:
+        with Image.open(path) as im:
+            return exif_datetime(im)
+    except Exception:  # noqa: BLE001 — not an image we can read; name matching may still work
+        return None
+
+
+def list_pending() -> int:
+    osxphotos, _, _ = _photos_backend()
+    state = load_state()
+    if not state.get("pending"):
+        print("nothing pending"); return 0
+    db = osxphotos.PhotosDB(dbfile=str(resolve_library(load_config().get("library"))))
+    print("pending photos — in Photos, search the filename (or go to the date), select them, then\n"
+          "File > Export > Export Unmodified Original... into a folder, and run --adopt <folder>:")
+    for p in sorted(db.photos(uuid=sorted(state["pending"])), key=lambda p: p.date):
+        print(f"  {p.uuid}  {p.date:%Y-%m-%d %H:%M}  {p.original_filename}  {'local' if p.path else 'iCloud only'}")
+    return 0
+
+
+def adopt(folder: Path) -> int:
+    osxphotos, _, _ = _photos_backend()
+    state = load_state()
+    files = [(f, _exif_iso(f)) for f in sorted(folder.iterdir())
+             if f.is_file() and f.suffix.lower() in PHOTO_EXTS]
+    if not files:
+        sys.exit(f"no photos in {folder}")
+    pending = db_photos = []
+    if state.get("pending"):
+        db = osxphotos.PhotosDB(dbfile=str(resolve_library(load_config().get("library"))))
+        db_photos = db.photos(uuid=sorted(state["pending"]))
+    matched, unmatched = match_exports(files, db_photos)
+    for dest in adopt_files(matched, state):
+        print(f"adopted {dest.name} -> data/inbox/photos/")
+    for path in unmatched:
+        print(f"  not a pending photo (left in place): {path.name}")
+    save_state(state)
+    print(f"adopt: {len(matched)} staged, {len(unmatched)} unmatched, {len(state['pending'])} still pending")
+    return 0
 
 
 def promote(uuids: list[str]) -> int:
@@ -504,8 +598,16 @@ def main() -> int:
     ap.add_argument("--library", help="Photos library bundle to read (default: the one Photos opens)")
     ap.add_argument("--promote", nargs="+", metavar="UUID")
     ap.add_argument("--reject", nargs="+", metavar="UUID")
+    ap.add_argument("--list-pending", action="store_true",
+                    help="show pending photos with filenames/dates so they can be exported from Photos by hand")
+    ap.add_argument("--adopt", metavar="DIR", type=Path,
+                    help="stage photos exported from Photos by hand (matched to pending by filename or capture time)")
     args = ap.parse_args()
     workspace.require(REPO_ROOT)
+    if args.list_pending:
+        return list_pending()
+    if args.adopt:
+        return adopt(args.adopt)
     if args.promote:
         return promote(args.promote)
     if args.reject:

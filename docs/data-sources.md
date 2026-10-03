@@ -93,6 +93,11 @@ detail capture of the same piece.
   so run the finder once from Terminal.app to grant Photos automation, or use
   `--no-download` and sweep the pending iCloud-only originals from Terminal.app
   later. After one timeout a run stops trying Photos for its remaining matches.
+  Storage-friendly fallback that needs no automation and no bulk download:
+  `--list-pending` prints each pending photo's filename and date; in Photos,
+  select them and File > Export > Export Unmodified Original into a folder
+  (iCloud fetches just those); `--adopt <folder>` matches the files to the
+  pending IDs (filename, else capture time) and stages them.
 - Vision OCR misreads LCD consoles predictably (`watt` → `wyatt`, `Walt`,
   `W30t`); the scorer's loose patterns and penalties for receipts, nutrition
   labels, social-app chrome and Fitness-app summaries are tuned on real hits.

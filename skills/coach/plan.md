@@ -17,6 +17,10 @@ the athlete can execute and the system can verify.
    point.
 6. `$ENGINE/knowledge/styles/*.md` for the track's methods; `adapt.md` for
    layoffs, missed sessions, illness signals, deloads and progression.
+7. `$ENGINE/knowledge/modalities.md` for each modality you prescribe on (its
+   output metric, how far wrist HR can be trusted, the realistic tier) and
+   `$ENGINE/knowledge/protocols.md` for any field test you schedule (steps,
+   which machines it suits, its biases, the anchors it yields).
 
 ## No active goal
 
@@ -46,6 +50,8 @@ compliance-scored; the plan body says so in its first line, and recommends
   MAF framing) as one of the week's slots — only once `adapt.md` §1's
   intensity gate is met (`consistency.current_streak_weeks` ≥ 2 on a re-entry
   rung or after a zero streak), not when re-entry's calendar length ends.
+  Write the protocol from `$ENGINE/knowledge/protocols.md`; on a machine it
+  records no protocol for, say so rather than improvising one.
 - Progression, holds and deloads: decide per `adapt.md` §6 and the styles'
   `progression_rules`. Weekly volume jumps stay within 10-20%
   `[grade D - practitioner heuristic, unverified]`.
@@ -57,7 +63,8 @@ compliance-scored; the plan body says so in its first line, and recommends
 - A modality with no `power.<modality>` anchors gets HR **ceilings** only
   (`hr_ceiling` at or below the top of the z2 band, no `hr_band` floor),
   marked provisional — the LTHR came from another modality and transfers only
-  approximately (`adapt.md` §4-§5). Hard HR bands on that modality wait for a
+  approximately (`adapt.md` §4-§5; `$ENGINE/knowledge/modalities.md`, Across
+  modalities). Hard HR bands on that modality wait for a
   calibration benchmark there (unless the LTHR test itself was on it).
 - When the benchmark notes say the test was sub-maximal or limiter-affected,
   the anchor is a floor: describe targets built on it as "at least", and

@@ -5,10 +5,12 @@ Dated field-test results, newest first. This is the human-readable log; the
 read). When a test is recorded here, update athlete.yaml in the same commit.
 
 Recommended protocol cadence: re-test zones every 4–6 weeks (dossier,
-Compliance Verification section). Formulas (220−age, 180−age) are bootstrap
-only — a field LTHR/FTP test replaces them (spec §11).
+Compliance Verification section; [unverified] — no primary source).
+Formulas (220−age, 180−age) are bootstrap only — a field LTHR/FTP test
+replaces them (spec §11).
 
-Test menu:
+Test menu (full steps, suitable machines, biases and the anchors each test
+yields: `$ENGINE/knowledge/protocols.md`):
 - **LTHR/FTP field test** (primary erg): 20–30 min TT; LTHR = avg HR of final
   20 min; FTP ≈ 95% of 20-min avg watts.
 - **MAF test**: fixed 5 km erg at MAF-cap HR; record time/avg watts.

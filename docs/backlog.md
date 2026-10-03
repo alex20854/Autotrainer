@@ -5,16 +5,15 @@ Ordered roughly by value. Add to it rather than keeping ideas in chat.
 
 ## Next packages
 
-- **Knowledge for more machines** — `knowledge/machines.md` entries for
-  concept2-rowerg and concept2-skierg (shared PM5 layout; s/m vs rpm; pace per
-  500 m vs watts; drag factor is a setting, not intensity), a Versaclimber
-  entry marked unconfirmed until a real console photo exists;
-  `knowledge/modalities.md` (limiter, output metric, wrist-HR reliability
-  including optical cadence lock, cross-erg transfer); `knowledge/protocols.md`
-  (field tests per machine, honest about what is unvalidated); readiness,
-  confounders and detraining notes; an evidence audit that tags every number
-  without a primary source and a sources ledger that separates "paper exists"
-  from "claim checked".
+- **Close the evidence gaps** — the knowledge-base package (RowErg/SkiErg
+  console entries, Versaclimber stub, `modalities.md`, `protocols.md`,
+  `readiness.md`, the evidence audit and `knowledge/sources.yaml`) is done.
+  Left: find sources for the numbers tagged `[unverified]` (`evidence.md`,
+  Known weak claims — the wrist-HR lag figure and the spec §9 decay and
+  time-to-benefit figures matter most), check the `claim_checked: false`
+  entries that exist, and confirm the RowErg/SkiErg console details marked
+  "confirm on the first photo" from real photos. Never import a claim without
+  a ledger entry.
 - **Concept2 + Watch consolidation** — field-authority table (Watch: HR, kcal,
   timing; machine: duration, distance, watts), a recording routine, a
   check-on-device list, and a replay tool that measures auto-merge precision

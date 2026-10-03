@@ -8,14 +8,17 @@ protocol:
 primary_adaptations: [VO2max, buffering/lactate-shuttle capacity, economy, aerobic power]
 evidence_grade: B
 key_sources: ["Billat vVO2max research (~40% more time at VO2max than continuous)", "Helgerud 2007 15/15 arm: VO2max +5.5%"]
+key_source_ids: [billat-nd, helgerud-2007]
+evidence_grade_code: "B"
+studied_population: "trained/recreational runners (Billat protocols); moderately trained men in the Helgerud 2007 15/15 arm"
 machine_suitability:
   excellent: [bikeerg, rowerg, skierg, airdyne, treadmill-run, run]
   notes: "short bouts suit machines with instant wattage feedback (PM5) for pacing each rep"
 verification_tier: 2
 minimum_effective_dose: "1-2x/wk"
-time_to_measurable_benefit: "~3-6 wks for rep-watt and time-at-intensity improvements (VO2max gains slightly slower than 4x4)"
+time_to_measurable_benefit: "~3-6 wks [unverified] for rep-watt and time-at-intensity improvements (VO2max gains slightly slower than 4x4)"
 consistency_requirement: "1-2x/wk within a block; individualized vVO2max anchor improves precision"
-detraining_decay: "fast, like other high-intensity work; 1x/wk maintains"
+detraining_decay: "fast, like other high-intensity work; 1x/wk maintains [unverified]"
 contraindications: ["HR verification impossible in-rep (optical lag exceeds bout length) — never prescribe where machine data won't exist"]
 progression_rules:
   - "add reps before adding pace; keep per-rep watts consistent (sawtooth pattern)"

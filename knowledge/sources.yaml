@@ -1,0 +1,604 @@
+# Sources ledger — one entry per citation that appears in knowledge/ or
+# cardio-coach-spec.md, plus the manufacturer pages read to write the
+# Concept2 console entries in machines.md.
+#
+# It separates two questions the knowledge base used to blur:
+#   exists         — does the cited work exist? null = not checked;
+#                    true = found (identifier recorded); false = looked for
+#                    and could not be found.
+#   claim_checked  — does the work say what the repo attributes to it?
+#                    true ONLY when a fetched abstract, paper or page states
+#                    the specific claim; `note` says what was read. A
+#                    resolving DOI proves existence, never the claim.
+#
+# Rules:
+# - claim_checked: true requires exists: true (tests/test_knowledge.py).
+# - Never import new claims from a source into the knowledge base without
+#   recording them here; the coach cites a claim_checked: false source as
+#   unverified and never as grade A (skills/coach/SKILL.md, Voice).
+# - claim_checked: true covers only the figures the entry's `note` names as
+#   read; a figure quoted after "Not checked:" in a note must carry an
+#   [unverified] tag wherever it appears in knowledge/ (tests/test_knowledge.py).
+# - id is author-year (lowercase, hyphenated); `-nd` = no year given in the
+#   repo. Style frontmatter `key_source_ids` must resolve to an id here.
+# - cited_in paths are relative to the engine root; `#` names the section.
+#
+# Checked on 2026-10-03 via PubMed E-utilities (esearch/esummary/efetch
+# abstracts) and the publishers' or manufacturers' own pages.
+
+sources:
+  - id: helgerud-2007
+    kind: paper
+    citation: "Helgerud et al. 2007 (Med Sci Sports Exerc 39(4):665–671)"
+    cited_in:
+      - knowledge/evidence.md#Method 3
+      - knowledge/evidence.md#Method 5
+      - knowledge/evidence.md#Caveats
+      - knowledge/styles/norwegian-4x4.md
+      - knowledge/styles/short-aerobic-hiit.md
+      - cardio-coach-spec.md#9
+      - cardio-coach-spec.md#10
+    exists: true
+    claim_checked: true
+    doi: 10.1249/mss.0b013e3180304570
+    pmid: "17414804"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      PubMed abstract read. It states: forty healthy, nonsmoking, moderately
+      trained men; 3 d/wk for 8 wk; VO2max rose 5.5% (15/15) and 7.2% (4x4);
+      stroke volume rose ~10% after interval training. That checks the
+      norwegian-4x4 and short-aerobic-hiit key_sources figures. Not checked:
+      "~3–4% for threshold and no gain for long slow distance" (evidence.md
+      Method 3) and the 90–95% HRmax intensity (not in the quoted abstract
+      text).
+
+  - id: wisloff-2007
+    kind: paper
+    citation: "Wisløff et al. 2007 (Circulation 115(24):3086–3094)"
+    cited_in:
+      - knowledge/evidence.md#Method 3
+      - knowledge/evidence.md#Caveats
+      - knowledge/styles/norwegian-4x4.md
+      - cardio-coach-spec.md#10
+    exists: true
+    claim_checked: true
+    doi: 10.1161/CIRCULATIONAHA.106.675041
+    pmid: "17548726"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      PubMed abstract read. It states: 27 patients with stable postinfarction
+      heart failure, aged 75.5±11.1 yr; VO2peak rose more with aerobic
+      interval training than moderate continuous training (46% vs 14%);
+      LV ejection fraction +35%; pro-BNP −40%. Not checked: the dossier's
+      absolute VO2peak values and baseline LVEF. Clinical, older population —
+      the dossier's own caveat applies.
+
+  - id: stoggl-sperlich-2014
+    kind: paper
+    citation: "Stöggl & Sperlich 2014 (Frontiers in Physiology 5:33)"
+    cited_in:
+      - knowledge/evidence.md#Method 2
+      - knowledge/styles/polarized.md
+      - cardio-coach-spec.md#9
+      - cardio-coach-spec.md#10
+    exists: true
+    claim_checked: true
+    doi: 10.3389/fphys.2014.00033
+    pmid: "24550842"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      PubMed abstract read. It states: 48 runners, cyclists, triathletes and
+      cross-country skiers (VO2peak 62.6±7.1); 9 weeks; HVT, THR, HIIT and POL
+      groups; POL had the greatest VO2peak increase (+6.8 or 11.7%); HVT and
+      THR had no further effects. One RCT in well-trained athletes — see the
+      polarized grade split (evidence.md Method 2 audit note). The
+      time-to-exhaustion and peak power figures were not re-read.
+
+  - id: seiler-kjerland-2006
+    kind: paper
+    citation: "Seiler & Kjerland 2006"
+    cited_in:
+      - knowledge/evidence.md#Method 2
+      - knowledge/evidence.md#Key sources cited
+      - knowledge/styles/polarized.md
+    exists: true
+    claim_checked: true
+    doi: 10.1111/j.1600-0838.2004.00418.x
+    pmid: "16430681"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      Scand J Med Sci Sports 16(1):49–56. PubMed abstract read: descriptive
+      intensity distribution of eleven well-trained junior cross-country
+      skiers over 32 days (HR-based ~75% zone 1, 8% zone 2, 17% zone 3). This
+      checks the polarized key_sources label "descriptive elite data" for one
+      sport only; the dossier's multi-sport convergence sentence rests on
+      seiler-tonnessen-2009.
+
+  - id: seiler-tonnessen-2009
+    kind: review
+    citation: "Seiler & Tønnessen 2009"
+    cited_in:
+      - knowledge/evidence.md#Method 2
+      - knowledge/styles/polarized.md
+    exists: true
+    claim_checked: true
+    doi: null
+    pmid: null
+    url: https://sportsci.org/2009/ss.htm
+    checked_on: 2026-10-03
+    note: >-
+      "Intervals, Thresholds, and Long Slow Distance", Sportscience 13:32–53
+      (not PubMed-indexed). Full text read: it states that elite endurance
+      athletes do 80% or more of their training clearly below lactate
+      threshold, and that the studies it reviews show about 80% of sessions
+      below the first ventilatory turn point. Narrative review, not a trial.
+
+  - id: milanovic-2015
+    kind: meta-analysis
+    citation: "Milanović, Sporiš & Weston 2015 (Sports Medicine 45(10):1469–1481)"
+    cited_in:
+      - knowledge/evidence.md#TL;DR
+      - knowledge/evidence.md#Method 8
+      - knowledge/evidence.md#Caveats
+    exists: true
+    claim_checked: true
+    doi: 10.1007/s40279-015-0365-0
+    pmid: "26243014"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      PubMed abstract read. It states: 28 studies, 723 participants, age
+      25.1±5 yr, initial VO2max 40.8±7.9; endurance vs control +4.9, HIT vs
+      control +5.5, HIT vs endurance +1.2 mL/kg/min ("possibly small
+      beneficial effect"). Matches the dossier, including its caveat about the
+      misattributed "4.9 vs 1.9" phrasing.
+
+  - id: tabata-1996
+    kind: paper
+    citation: "Tabata I. et al., 1996, Med Sci Sports Exerc 28(10):1327–30"
+    cited_in:
+      - knowledge/evidence.md#Method 6
+      - knowledge/styles/sit-rehit-tabata.md
+    exists: true
+    claim_checked: true
+    doi: 10.1097/00005768-199610000-00018
+    pmid: "8897392"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      PubMed abstract read: "seven to eight sets of 20-s exercise at an
+      intensity of about 170% of VO2max with a 10-s rest". Checks the ~170%
+      VO2max and 20 s / 10 s structure. The repo writes "8 x 20 s"; the
+      abstract says seven to eight sets — left unchanged, noted here.
+
+  - id: gibala-2006
+    kind: paper
+    citation: "Gibala et al. 2006"
+    cited_in:
+      - knowledge/evidence.md#Method 6
+      - knowledge/styles/sit-rehit-tabata.md
+      - cardio-coach-spec.md#9
+    exists: true
+    claim_checked: true
+    doi: 10.1113/jphysiol.2006.112094
+    pmid: "16825308"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      J Physiol 575(Pt 3):901–911. PubMed abstract read: 4–6 x 30 s all-out
+      cycling, 4 min recovery, six sessions over 14 days, in sixteen active
+      young men; adaptations "comparable to ET". Checks the "6-session /
+      2-week protocol matched endurance-training adaptations" claim. Not
+      checked: "VO2max ~6 wks — Gibala" (spec §9, sit-rehit-tabata) — this
+      abstract does not say it.
+
+  - id: burgomaster-2005
+    kind: paper
+    citation: "Burgomaster 2005"
+    cited_in:
+      - knowledge/evidence.md#Method 6
+      - knowledge/styles/sit-rehit-tabata.md
+    exists: true
+    claim_checked: true
+    doi: 10.1152/japplphysiol.01095.2004
+    pmid: "15705728"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      J Appl Physiol 98(6):1985–1990. PubMed abstract read: six sessions of
+      4–7 x 30 s Wingate over 2 wk raised muscle oxidative potential
+      (citrate synthase maximal activity) and cycle endurance capacity —
+      supports "oxidative markers in ~2 wks / 6 sessions". The abstract also
+      reports no change in VO2peak over those two weeks.
+
+  - id: babraj-2009
+    kind: paper
+    citation: "Babraj 2009 (insulin sensitivity)"
+    cited_in:
+      - knowledge/evidence.md#Method 6
+      - knowledge/styles/sit-rehit-tabata.md
+    exists: true
+    claim_checked: true
+    doi: 10.1186/1472-6823-9-3
+    pmid: "19175906"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      BMC Endocr Disord 9:3, "Extremely short duration high intensity interval
+      training substantially improves insulin action in young healthy males".
+      PubMed abstract read: six sessions of 4–6 x 30 s sprints over two weeks
+      in sixteen young men improved insulin sensitivity. Checks the
+      "insulin sensitivity" attribution.
+
+  - id: mandsager-2018
+    kind: paper
+    citation: "Mandsager et al. 2018 (JAMA Network Open 1(6):e183605)"
+    cited_in:
+      - knowledge/evidence.md#Method 3
+      - knowledge/evidence.md#Perspectives
+      - knowledge/evidence.md#Caveats
+    exists: true
+    claim_checked: true
+    doi: 10.1001/jamanetworkopen.2018.3605
+    pmid: "30646252"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      PubMed abstract read: 122,007 patients, mean age 53.4, median follow-up
+      8.4 yr; elite vs low adjusted HR 0.20 (95% CI 0.16–0.24); elite vs high
+      0.77 (0.63–0.95); "no observed upper limit of benefit". Checks the
+      dossier's figures. The "45-day life expectancy per unit VO2max" line is
+      Rhonda Patrick's statement, not this abstract (see patrick-nd).
+
+  - id: west-2014
+    kind: paper
+    citation: "West et al. 2014 (J Strength Cond Res 28(1):265–272)"
+    cited_in:
+      - knowledge/evidence.md#Method 11
+      - knowledge/styles/sled-conditioning.md
+    exists: true
+    claim_checked: true
+    doi: 10.1519/JSC.0b013e3182948110
+    pmid: "23575361"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      PubMed abstract read: strength-trained men (n = 11), maximal backward
+      sled drags loaded with 75% body mass; blood lactate 1.7 ± 0.5 at
+      baseline vs 12.4 ± 2.6 mmol/L immediately after. Checks the repo's
+      figures.
+
+  - id: lambe-2025
+    kind: meta-analysis
+    citation: "npj Digital Medicine 2025 Apple Watch meta-analysis (s41746-025-02238-1)"
+    cited_in:
+      - knowledge/evidence.md#Compliance Verification Specifics
+      - knowledge/modalities.md#bikeerg
+    exists: true
+    claim_checked: false
+    doi: 10.1038/s41746-025-02238-1
+    pmid: "41513748"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      Lambe R et al., "The accuracy of Apple Watch measurements: a living
+      systematic review and meta-analysis" (PubMed lists the 2026 issue).
+      Abstract read: it reports an overall heart-rate bias and limits of
+      agreement across studies but no third-generation-sensor subgroup, so
+      the repo's narrower Series 6+ limits (8 studies) are NOT checked. The
+      full text was behind a login redirect.
+
+  - id: uth-2004
+    kind: paper
+    citation: "Uth–Sørensen heart-rate ratio (15.3 × HRmax ÷ resting HR)"
+    cited_in:
+      - knowledge/reference-values.yaml#method_caveats
+      - knowledge/protocols.md
+    exists: true
+    claim_checked: true
+    doi: 10.1007/s00421-003-0988-y
+    pmid: "14624296"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      Uth N, Sørensen H et al., Eur J Appl Physiol 91(1):111–115. Abstract
+      read: the proportionality factor between HRmax/HRrest and
+      mass-specific VO2max was 15.3, derived in 46 well-trained men aged
+      21–51. Checks the 15.3 factor. The abstract also reports a standard
+      error of estimate in its own validation group; the repo's
+      "[unverified] large individual error" caveat is left as written.
+
+  - id: kaminsky-2015
+    kind: registry
+    citation: "FRIEND registry percentiles (Kaminsky et al., Mayo Clin Proc — treadmill-based)"
+    cited_in:
+      - knowledge/reference-values.yaml#percentiles
+    exists: true
+    claim_checked: false
+    doi: 10.1016/j.mayocp.2015.07.026
+    pmid: "26455884"
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      The repo gives no year. Best match: Kaminsky 2015, "Reference Standards
+      for Cardiorespiratory Fitness Measured With Cardiopulmonary Exercise
+      Testing: Data From the FRIEND" (treadmill). A 2017 cycle-ergometry
+      paper (PMID 27938891) and a 2022 update (PMID 34809986) also exist.
+      The percentile values in reference-values.yaml were NOT checked
+      against any of them.
+
+  - id: hoeg-maffetone-2015
+    kind: poster
+    citation: "Maffetone (largely a 2015 conference poster: Hoeg & Maffetone)"
+    cited_in:
+      - knowledge/evidence.md#Method 7
+      - knowledge/styles/maf.md
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: 2026-10-03
+    note: >-
+      Not found in PubMed or a web search; conference posters are often
+      unindexed. Existence unconfirmed, not disproved.
+
+  - id: jcm-2023
+    kind: paper
+    citation: "a 2023 Journal of Clinical Medicine analysis cited by coaches (age-based HR formulas ±5+ bpm)"
+    cited_in:
+      - knowledge/evidence.md#Method 7
+      - knowledge/styles/maf.md
+      - knowledge/protocols.md#MAF test
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "No author or title in the repo, so it cannot be identified; not looked up."
+
+  - id: billat-nd
+    kind: research-programme
+    citation: "Billat (vVO2max 30/30 research)"
+    cited_in:
+      - knowledge/evidence.md#Method 5
+      - knowledge/styles/short-aerobic-hiit.md
+      - cardio-coach-spec.md#10
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: >-
+      No specific paper named, so the "~40% more time at VO2max" figure has no
+      checkable source. Name the paper before relying on the number.
+
+  - id: metcalfe-vollaard-nd
+    kind: research-programme
+    citation: "REHIT (Metcalfe/Vollaard)"
+    cited_in:
+      - knowledge/evidence.md#Method 6
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "No paper named in the repo; not looked up."
+
+  - id: acsm-nd
+    kind: equation
+    citation: "ACSM leg-cycling VO2 = 10.8 x W / kg + 7"
+    cited_in:
+      - knowledge/reference-values.yaml#estimate
+      - knowledge/protocols.md
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: >-
+      ACSM metabolic equation as written in the repo; no edition or page
+      cited, not checked tonight. The 0.95 and 0.85 power ratios beside it
+      have no source at all (reference-values.yaml annotations).
+
+  - id: friel-nd
+    kind: practitioner
+    citation: "Friel benchmark (<5% decoupling); TrainingPeaks (aerobic decoupling)"
+    cited_in:
+      - knowledge/evidence.md#Compliance Verification Specifics
+      - knowledge/styles/zone2.md
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Practitioner benchmark; no article named. Grade C/D framing applies."
+
+  - id: san-millan-nd
+    kind: practitioner
+    citation: "San Millán (Peter Attia Drive #85/#201; The Proof podcast; X statement)"
+    cited_in:
+      - knowledge/evidence.md#Method 1
+      - knowledge/evidence.md#Perspectives
+      - knowledge/styles/zone2.md
+      - knowledge/protocols.md#Talk test (Zone 2 refinement)
+      - cardio-coach-spec.md#10
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Podcast and social-media statements; practitioner evidence (grade C/D), not looked up."
+
+  - id: attia-nd
+    kind: practitioner
+    citation: "Attia (Outlive framework; AMA #79)"
+    cited_in:
+      - knowledge/evidence.md#Method 1
+      - knowledge/evidence.md#Perspectives
+      - knowledge/styles/zone2.md
+      - cardio-coach-spec.md#10
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Book and podcast framing; practitioner evidence, not looked up."
+
+  - id: patrick-nd
+    kind: practitioner
+    citation: "Patrick (FoundMyFitness Ep. #84)"
+    cited_in:
+      - knowledge/evidence.md#Method 3
+      - knowledge/evidence.md#Perspectives
+      - knowledge/evidence.md#Caveats
+      - knowledge/styles/norwegian-4x4.md
+      - cardio-coach-spec.md#10
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: >-
+      Podcast; communicator, not a primary source. Her "45-day life
+      expectancy" statement is hers, not Mandsager 2018's abstract.
+
+  - id: galpin-2023
+    kind: practitioner
+    citation: "Galpin (Huberman Lab Guest Series 2023)"
+    cited_in:
+      - knowledge/evidence.md#Perspectives
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Podcast; communicator, not a primary source."
+
+  - id: gibala-foundmyfitness-nd
+    kind: practitioner
+    citation: "Gibala, on FoundMyFitness (REHIT reduces the 'metabolic feelings' of 30 s Wingates)"
+    cited_in:
+      - knowledge/evidence.md#Method 6
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Podcast appearance; not looked up."
+
+  - id: maffetone-nd
+    kind: practitioner
+    citation: "Maffetone (180-formula); strong practitioner record (Mark Allen)"
+    cited_in:
+      - knowledge/evidence.md#Method 7
+      - knowledge/styles/maf.md
+      - cardio-coach-spec.md#10
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Practitioner formula; the dossier grades it D. Not looked up."
+
+  - id: hinshaw-nd
+    kind: practitioner
+    citation: "Hinshaw (aerobiccapacity.com / CrossFit)"
+    cited_in:
+      - knowledge/evidence.md#Method 9
+      - knowledge/styles/hinshaw-pace-diversity.md
+      - cardio-coach-spec.md#1
+      - cardio-coach-spec.md#10
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Practitioner methodology; the '~30 Games champions' figure is unsourced [unverified]."
+
+  - id: carson-nd
+    kind: practitioner
+    citation: "Carson (Concept2 / Engine by Carson; Lizzy Carson, The Rowing Standard)"
+    cited_in:
+      - knowledge/evidence.md#Method 9
+      - knowledge/styles/carson-engine.md
+      - cardio-coach-spec.md#1
+      - cardio-coach-spec.md#10
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Practitioner programming; grade D. Not looked up."
+
+  - id: fascat-trainerroad-nd
+    kind: practitioner
+    citation: "FasCat/TrainerRoad (sweet spot); Overton/FasCat, Hunter Allen"
+    cited_in:
+      - knowledge/evidence.md#Method 4
+      - knowledge/styles/threshold-sweet-spot.md
+    exists: null
+    claim_checked: false
+    doi: null
+    pmid: null
+    url: null
+    checked_on: null
+    note: "Practitioner zone definitions (88–94% / 84–97% FTP); not looked up."
+
+  - id: concept2-pm5-101
+    kind: manufacturer
+    citation: "Concept2, 'PM5 101' (concept2.com blog)"
+    cited_in:
+      - knowledge/machines.md#concept2-rowerg
+      - knowledge/machines.md#concept2-skierg
+      - knowledge/modalities.md#rowerg
+      - knowledge/modalities.md#bikeerg
+      - knowledge/modalities.md#Across modalities
+    exists: true
+    claim_checked: true
+    doi: null
+    pmid: null
+    url: https://www.concept2.com/blog/pm5-101
+    checked_on: 2026-10-03
+    note: >-
+      Page read. It states: five display choices, switchable before, during
+      or after a workout; All Data shows current pace, time, distance,
+      average pace and stroke rate (s/m), plus HR with a compatible monitor;
+      "Pace is expressed as time per 500 meters (or per 1000m on the
+      BikeErg)"; the Units button changes units at any time (pace, Calories,
+      watts). It does not cover the projected-finish line or drag factor.
+
+  - id: concept2-damper-setting
+    kind: manufacturer
+    citation: "Concept2, 'Damper Setting 101' (concept2.com.au training article)"
+    cited_in:
+      - knowledge/machines.md#concept2-rowerg
+    exists: true
+    claim_checked: true
+    doi: null
+    pmid: null
+    url: https://www.concept2.com.au/training/articles/damper-setting
+    checked_on: 2026-10-03
+    note: >-
+      Page read (indoor rower). It states that people confuse damper setting
+      with intensity or resistance; intensity is controlled by how hard you
+      pull; the PM measures flywheel deceleration between strokes and calls
+      it the drag factor; effort is calculated regardless of damper setting.
+      It says nothing about the SkiErg.

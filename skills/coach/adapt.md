@@ -16,7 +16,9 @@ as zero days. Pick the rung from **recency and recent volume**, taking the
 more conservative of the two (day ranges and the volume test are grade D
 defaults; the shape — interval fitness fades in weeks, base fades slowly —
 follows `$ENGINE/knowledge/styles/norwegian-4x4.md` `detraining_decay` /
-`consistency_requirement` and `zone2.md` `detraining_decay`):
+`consistency_requirement` and `zone2.md` `detraining_decay` — whose numbers
+are themselves `[unverified]`; `$ENGINE/knowledge/readiness.md`, Detraining,
+summarises them with their grades):
 
 - **Recency**: `sessions.days_since_last_structured` against the table.
 - **Volume**: when `consistency.current_streak_weeks` is 0 and the two weeks
@@ -77,6 +79,10 @@ Re-entry rules:
 
 ## 3. Illness signals and recovery context
 
+Background — what these numbers can and cannot show, rolling baselines,
+wearable HRV caveats and the confounders of HR drift:
+`$ENGINE/knowledge/readiness.md`.
+
 - Context, not diagnosis: `recovery.resting_hr.days_elevated` (as `status.py`
   defines it against `elevated_threshold_bpm`, an engineering default) and the
   HRV `delta_vs_28d`. State the n behind each median; thin data is weak evidence.
@@ -95,8 +101,10 @@ Re-entry rules:
 
 - On any machine without `power.<modality>` anchors, prescribe by HR only —
   conservative ceilings at or below the top of the z2 band, tier 1 for
-  continuous work. Unfamiliar watts or pace never compare with home machines
-  `[grade D - practitioner heuristic, unverified]`.
+  continuous work `[grade D - practitioner heuristic, unverified]`.
+- Unfamiliar watts or pace never compare with home machines: each console
+  reports output on its own basis (`$ENGINE/knowledge/modalities.md`, Across
+  modalities) `[grade D - practitioner heuristic, unverified]`.
 - Ask for a console photo after every session (it identifies the machine and
   feeds `$ENGINE/knowledge/machines.md` if the console is new).
 - Intervals on hotel or unknown machines: tier per the SKILL.md interval rule;
@@ -112,11 +120,13 @@ Re-entry rules:
   (`$ENGINE/docs/schema.md`, Modality vocabulary).
 - **First sessions**: easy, HR-capped, stated as conservative ceilings — not
   zone targets — because the LTHR came from another modality and transfers only
-  approximately `[grade D - practitioner heuristic, unverified]`.
+  approximately (`$ENGINE/knowledge/modalities.md`, Across modalities)
+  `[grade D - practitioner heuristic, unverified]`.
 - **Calibration benchmark** only after 2-3 familiarisation sessions
   `[grade D - practitioner heuristic, unverified]`, using the `benchmarks.md`
-  protocol; then set `power.<modality>` if the console reports watts, else the
-  machine stays HR-only.
+  protocol (`$ENGINE/knowledge/protocols.md`); then set `power.<modality>` if
+  the console reports watts, else the machine stays HR-only — no validated
+  protocol is recorded for machines without watts.
 - Add a `$ENGINE/knowledge/machines.md` entry from the first console
   photo — console layout and quirks only, never athlete data (`workspace.md`,
   Where new knowledge goes).

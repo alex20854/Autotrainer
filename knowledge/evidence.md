@@ -3,7 +3,7 @@
 ## TL;DR
 - For a healthy 20s–50s adult with erg/machine access and an Apple Watch, the strongest evidence supports a **polarized (80/20) framework**: a large base of Zone 2/LT1 steady state plus a small dose of high-intensity intervals (the Norwegian 4x4 being the best-studied VO2max builder). Zone 2 and single-machine intervals are the *most compliance-verifiable* methods; mixed-modal circuits and sled/functional work are the *least* verifiable.
 - Across meta-analyses, HIIT and moderate continuous training both raise VO2max substantially, with HIIT modestly superior per unit time (Milanović 2015: HIT ~5.5 vs endurance ~4.9 mL/kg/min vs non-exercise controls; head-to-head HIT advantage only ~1.2 mL/kg/min); most methods "work," so **selection should be driven by adherence, joint stress, and measurability, not marginal physiological superiority**.
-- The AI coach should verify compliance primarily from **machine watts/pace/splits (objective, lag-free)** and use **Apple Watch HR for steady-state confirmation and trend/decoupling analysis**, while treating wrist HR during short intervals as unreliable due to a documented 5–15 second optical lag.
+- The AI coach should verify compliance primarily from **machine watts/pace/splits (objective, lag-free)** and use **Apple Watch HR for steady-state confirmation and trend/decoupling analysis**, while treating wrist HR during short intervals as unreliable due to a documented 5–15 second optical lag [unverified].
 
 ## Evidence-Grading Legend
 - **A — RCT/meta-analytic:** Multiple randomized controlled trials and/or systematic reviews/meta-analyses in humans.
@@ -14,7 +14,7 @@
 ---
 
 ## Method 1 — Zone 2 / LT1 Steady-State Training
-**Protocol.** Continuous effort at/just below the first lactate threshold (LT1), where blood lactate is ~1.5–2.0 mmol/L. Peter Attia defines Zone 2 as "the highest metabolic output/work that you can sustain while keeping your lactate level below two millimole per liter." Intensity anchors: ~60–70% HRmax; RPE ~3–4/10; the **talk test** (can speak in full but slightly strained sentences). San Millán uses a 6–7 zone model and prefers lab lactate/VO2 testing but recommends the talk test over formulas. Duration: minimum ~45–60 min per session (San Millán argues ≥60 min needed to stimulate adaptation). Volume: San Millán has recommended 300–400 min/week for metabolic optimization; Attia recommends ~3–4 hours/week across 3–4 sessions. Progression: increase duration first, then increase power/pace at the same HR/lactate (the "same HR, more watts" signal).
+**Protocol.** Continuous effort at/just below the first lactate threshold (LT1), where blood lactate is ~1.5–2.0 mmol/L [unverified]. Peter Attia defines Zone 2 as "the highest metabolic output/work that you can sustain while keeping your lactate level below two millimole per liter." Intensity anchors: ~60–70% HRmax [unverified]; RPE ~3–4/10 [unverified]; the **talk test** (can speak in full but slightly strained sentences). San Millán uses a 6–7 zone model and prefers lab lactate/VO2 testing but recommends the talk test over formulas. Duration: minimum ~45–60 min per session (San Millán argues ≥60 min needed to stimulate adaptation). Volume: San Millán has recommended 300–400 min/week for metabolic optimization; Attia recommends ~3–4 hours/week across 3–4 sessions. Progression: increase duration first, then increase power/pace at the same HR/lactate (the "same HR, more watts" signal).
 
 **Adaptations.** Mitochondrial biogenesis and function, increased fat oxidation (near FatMax), improved lactate clearance (MCT1/MCT4 transporter upregulation), capillary density, stroke volume, improved insulin sensitivity and metabolic flexibility. San Millán frames lactate clearance and fat oxidation as surrogates of mitochondrial function.
 
@@ -35,6 +35,8 @@
 
 **Evidence grade: A.** Stöggl & Sperlich (2014, *Frontiers in Physiology* 5:33): 48 well-trained endurance athletes (baseline VO2peak 62.6±7.1 mL/kg/min), 9 weeks, randomized to polarized (POL), threshold (THR), HIIT, or high-volume (HVT). Verbatim: "POL demonstrated the greatest increase in VO2peak (+6.8 ml·min·kg⁻¹ or 11.7%, P<0.001), time to exhaustion during the ramp protocol (+17.4%, P<0.001) and peak velocity/power (+5.1%, P<0.01)." THR and HVT produced no further improvement in key variables. Caveat: nuance exists — several analyses note elite base phases are often *pyramidal* rather than strictly polarized, and Seiler himself has acknowledged this.
 
+**Audit note — one grade, two claims.** The A above covers two different claims, and this entry's own text grades them differently. (1) *Mostly easy plus a small dose of hard*: keeps the dossier's headline **A**, but in the repo that A rests on Stöggl & Sperlich 2014 plus descriptive elite data (Seiler & Kjerland 2006; Seiler & Tønnessen 2009, a narrative review) — not on independent multi-RCT corroboration. Method 1's "polarized-training literature (grade A)" points back to this entry's own grade, and Method 8 compares HIIT with continuous training, not intensity distributions; neither adds support. The A is listed as unconfirmed under Known weak claims. (2) *Strict polarized beats threshold, pyramidal or volume-only distributions*: rests on one RCT in well-trained endurance athletes (Stöggl & Sperlich 2014), which the legend grades **B** ("single RCT"), and the pyramidal caveat above qualifies it. The style entry carries both codes (`styles/polarized.md` `evidence_grade_split`); the headline grade is unchanged.
+
 **Equipment suitability.** Excellent on all listed equipment; naturally maps to erg-based training (Zone 2 rows/rides for the 80%, 4x4 or short intervals for the 20%).
 
 **Compliance measurability: HIGH (structural).** Easy to audit by counting sessions: e.g., of 5 weekly sessions, 4 easy + 1 hard. Requires HR or power to confirm easy days are genuinely easy.
@@ -44,11 +46,11 @@
 ---
 
 ## Method 3 — Norwegian 4x4 Intervals
-**Protocol.** 4 × 4-minute work intervals at **~90–95% HRmax** (some sources 85–95%), separated by **3-minute active recovery at ~60–70% HRmax**; ~10-min warm-up, cool-down. Total ~35–40 min. Developed by Helgerud, Hoff and Wisløff at NTNU (Trondheim), studied extensively by the Cardiac Exercise Research Group (CERG). Frequency: typically 2–3×/week in studies; for health, 1×/week preserves most gains. Progression: increase pace/power (not duration); the classic error is going too hard on interval 1 and fading.
+**Protocol.** 4 × 4-minute work intervals at **~90–95% HRmax** (some sources 85–95%), separated by **3-minute active recovery at ~60–70% HRmax**; ~10-min warm-up, cool-down. Total ~35–40 min. Developed by Helgerud, Hoff and Wisløff at NTNU (Trondheim), studied extensively by the Cardiac Exercise Research Group (CERG). Frequency: typically 2–3×/week in studies; for health, 1×/week preserves most gains [unverified]. Progression: increase pace/power (not duration); the classic error is going too hard on interval 1 and fading.
 
 **Adaptations.** Large VO2max gains (driven by increased stroke volume/cardiac output — the 4-min bouts sustain near-maximal stroke volume), improved lactate threshold velocity, endothelial function.
 
-**Evidence grade: A.** Helgerud et al. (2007, *Med Sci Sports Exerc* 39(4):665–671): 40 moderately trained men, 8 weeks, 3×/week; 4x4 raised VO2max ~7.2% (some secondary summaries report up to ~13%) vs ~3–4% for threshold and no gain for long slow distance, matched for total work; stroke volume rose ~10%. Wisløff et al. (2007, *Circulation* 115(24):3086–3094), 27 postinfarction heart-failure patients (mean age 75.5±11.1 yr, baseline LVEF 29%): aerobic interval training raised VO2peak from 13.0±1.6 to 19.0±2.1 mL/kg/min (+46%) vs +14% for moderate continuous training (13.1→14.9), P<0.001; left-ventricular ejection fraction rose 35% and pro-BNP fell 40%. Rhonda Patrick promotes 4x4 as a leading VO2max protocol; she describes it verbatim as "four minutes long, and you're aiming for about 85% to 95% of your max heart rate... the recovery period is three minutes long... repeated four times," citing VO2max as a top longevity marker (via Mandsager 2018).
+**Evidence grade: A.** Helgerud et al. (2007, *Med Sci Sports Exerc* 39(4):665–671): 40 moderately trained men, 8 weeks, 3×/week; 4x4 raised VO2max ~7.2% (some secondary summaries report up to ~13% [unverified — summaries not named]) vs ~3–4% for threshold and no gain for long slow distance [unverified — not in the Helgerud 2007 abstract], matched for total work; stroke volume rose ~10%. Wisløff et al. (2007, *Circulation* 115(24):3086–3094), 27 postinfarction heart-failure patients (mean age 75.5±11.1 yr, baseline LVEF 29% [unverified — not in the abstract read]): aerobic interval training raised VO2peak from 13.0±1.6 to 19.0±2.1 mL/kg/min (+46%) vs +14% for moderate continuous training (13.1→14.9) [unverified — absolute values not in the abstract read], P<0.001; left-ventricular ejection fraction rose 35% and pro-BNP fell 40%. Rhonda Patrick promotes 4x4 as a leading VO2max protocol; she describes it verbatim as "four minutes long, and you're aiming for about 85% to 95% of your max heart rate... the recovery period is three minutes long... repeated four times," citing VO2max as a top longevity marker (via Mandsager 2018).
 
 **Equipment suitability.** Excellent on RowErg/BikeErg/SkiErg (clean watt targets), Airdyne, stairclimber, Versaclimber, treadmill (incline running is the classic modality), and running track. BikeErg/RowErg preferred for precise interval wattage and safety at high intensity.
 
@@ -59,7 +61,7 @@
 ---
 
 ## Method 4 — Threshold / Tempo / Sweet Spot (LT2, FTP-style)
-**Protocol.** Sustained work at or just below the second lactate threshold (LT2)/functional threshold power (FTP). **Sweet spot = ~88–94% FTP** (Frank Overton/FasCat and Hunter Allen popularized 84–97%); **threshold = ~95–105% FTP**. Typical sessions: 2–3 × 15–20 min at sweet spot, or over-unders (e.g., 10 min alternating 90%/105% FTP). RPE ~7/10; speech in short clipped sentences. Frequency: 2–3×/week is the ceiling, not floor, because it sits in the grey zone.
+**Protocol.** Sustained work at or just below the second lactate threshold (LT2)/functional threshold power (FTP). **Sweet spot = ~88–94% FTP** (Frank Overton/FasCat and Hunter Allen popularized 84–97%); **threshold = ~95–105% FTP** [unverified]. Typical sessions: 2–3 × 15–20 min at sweet spot, or over-unders (e.g., 10 min alternating 90%/105% FTP). RPE ~7/10 [unverified]; speech in short clipped sentences. Frequency: 2–3×/week is the ceiling, not floor, because it sits in the grey zone [unverified].
 
 **Adaptations.** Raised lactate threshold, mitochondrial density, capillarization, muscular endurance/fatigue resistance; time-efficient aerobic stimulus. Does **not** raise the VO2max ceiling — needs Zone 5 work alongside to avoid plateau.
 
@@ -93,7 +95,7 @@
 
 **Adaptations.** VO2max, muscle oxidative capacity, insulin sensitivity, anaerobic capacity. Gibala's 6-session/2-week Wingate protocol matched endurance-training adaptations at far lower volume (Gibala et al. 2006; Burgomaster 2005; Babraj 2009 for insulin sensitivity).
 
-**Evidence grade: A (efficacy), with adherence/tolerability caveats.** Well-replicated. Key caveat on **Tabata misapplication**: the original required ~170% VO2max supramaximal cycling — an intensity almost no one reaches doing "Tabata" burpees/planks; research indicates only ~4 bouts are sustainable at true 170%, and ~115% iVO2max is needed to complete 7–8 bouts. All-out Wingates cause pain, nausea, and dizziness that hurt adherence — hence REHIT's shorter sprints (Gibala, on FoundMyFitness, explains REHIT reduces the "metabolic feelings" of 30 s Wingates while keeping high power output). Tabata I. et al., 1996, *Med Sci Sports Exerc* 28(10):1327–30.
+**Evidence grade: A (efficacy), with adherence/tolerability caveats.** Well-replicated. Key caveat on **Tabata misapplication**: the original required ~170% VO2max supramaximal cycling — an intensity almost no one reaches doing "Tabata" burpees/planks; research indicates only ~4 bouts are sustainable at true 170%, and ~115% iVO2max is needed to complete 7–8 bouts [unverified — no study named]. All-out Wingates cause pain, nausea, and dizziness that hurt adherence — hence REHIT's shorter sprints (Gibala, on FoundMyFitness, explains REHIT reduces the "metabolic feelings" of 30 s Wingates while keeping high power output). Tabata I. et al., 1996, *Med Sci Sports Exerc* 28(10):1327–30.
 
 **Equipment suitability.** BikeErg/Airdyne ideal (resistance + safety). RowErg usable. **Not** appropriate to force onto a treadmill (safety) at supramaximal effort. Versaclimber/stairs can approximate.
 
@@ -119,7 +121,7 @@
 ---
 
 ## Method 8 — HIIT vs. MICT: Meta-Analytic Comparison
-**Findings.** Both raise VO2max substantially. **Milanović, Sporiš & Weston (2015, *Sports Medicine* 45(10):1469–1481)**: 28 studies, 723 healthy adults (mean age 25.1±5 yr, baseline VO2max 40.8±7.9 mL/kg/min, age range 18–45) — endurance training +4.9 mL/kg/min and HIT +5.5 mL/kg/min vs non-exercise controls; head-to-head HIT advantage only ~1.2 mL/kg/min ("gains in VO2max being greater following HIT"). In healthy young-men RCTs, differences are often non-significant (e.g., a 15×30 s HIIT vs 40-min MICT trial found no significant VO2max difference; MICT lowered systolic BP more). HIIT is more **time-efficient**; adherence differences are inconsistent (one cancer-population study showed ~87% adherence in both arms). In cardiac rehab, medium-interval HIIT 3×/week for >12 weeks gave the largest CRF gains and was safe.
+**Findings.** Both raise VO2max substantially. **Milanović, Sporiš & Weston (2015, *Sports Medicine* 45(10):1469–1481)**: 28 studies, 723 healthy adults (mean age 25.1±5 yr, baseline VO2max 40.8±7.9 mL/kg/min, age range 18–45) — endurance training +4.9 mL/kg/min and HIT +5.5 mL/kg/min vs non-exercise controls; head-to-head HIT advantage only ~1.2 mL/kg/min ("gains in VO2max being greater following HIT"). In healthy young-men RCTs, differences are often non-significant (e.g., a 15×30 s HIIT vs 40-min MICT trial found no significant VO2max difference; MICT lowered systolic BP more [unverified — trial not named]). HIIT is more **time-efficient**; adherence differences are inconsistent (one cancer-population study showed ~87% adherence in both arms [unverified — study not named]). In cardiac rehab, medium-interval HIIT 3×/week for >12 weeks gave the largest CRF gains and was safe [unverified — source not named].
 
 **Evidence grade: A.** Multiple meta-analyses.
 
@@ -130,7 +132,7 @@
 ## Method 9 — CrossFit-World Aerobic Capacity Coaching
 
 ### Chris Hinshaw (aerobiccapacity.com)
-**Methodology.** Three pillars in his own words: (1) "every movement's unique, and every speed within that movement is unique, you must develop a range of gears"; (2) focus on **maximum sustainable pace** per modality; (3) build fatigue and then **focus on the recovery side** (measure active recovery, not just work). He derives interval paces from personal benchmarks (e.g., mile PR → estimated LT, VO2max, and 400 m paces), and programs multi-pace workouts (e.g., 3 sets: 500 m fast run / 200 m recovery jog / 100 m sprint, each pace anchored to PRs). Emphasis on measured recovery intervals and pace diversity across time domains ("Our job is to create a range of speeds based upon time domains"). Has coached ~30 CrossFit Games champions.
+**Methodology.** Three pillars in his own words: (1) "every movement's unique, and every speed within that movement is unique, you must develop a range of gears"; (2) focus on **maximum sustainable pace** per modality; (3) build fatigue and then **focus on the recovery side** (measure active recovery, not just work). He derives interval paces from personal benchmarks (e.g., mile PR → estimated LT, VO2max, and 400 m paces), and programs multi-pace workouts (e.g., 3 sets: 500 m fast run / 200 m recovery jog / 100 m sprint, each pace anchored to PRs). Emphasis on measured recovery intervals and pace diversity across time domains ("Our job is to create a range of speeds based upon time domains"). Has coached ~30 CrossFit Games champions [unverified].
 
 **Evidence grade: C/D.** Practitioner methodology grounded in standard exercise-physiology anchors (LT, vVO2max, running economy); no controlled trials of "the Hinshaw method" per se.
 
@@ -146,7 +148,7 @@
 ---
 
 ## Method 10 — Hyrox / Hybrid-Competition Preparation
-**Protocol.** Race = 8 × 1 km runs, each followed by a functional station (ski erg, sled push, sled pull, burpee broad jumps, row, farmers carry, sandbag lunges, wall balls). Running is ~50% of race time. Core training concepts: **compromised running** (running hard immediately after a station, training the first 200–400 m off the sled/lunges), **station-specific training at competition weights**, **Roxzone efficiency** (transitions are ~8–15% of race time and "free" seconds), pacing discipline (start ~half-marathon effort, negative-split; athletes who go out >10 s/km too fast fade 18–22% by run 8), and durability (tendons, eccentrics, trunk). Typical structure (per coaching brands): 4–6 sessions/week = 2–3 strength, 2–3 running, 1–2 hybrid metcons; race-specific periodization over 12–13 weeks. Sub-90-minute Open finishes typically require ~40–45 min of running plus efficient stations/transitions.
+**Protocol.** Race = 8 × 1 km runs, each followed by a functional station (ski erg, sled push, sled pull, burpee broad jumps, row, farmers carry, sandbag lunges, wall balls). Running is ~50% of race time [unverified]. Core training concepts: **compromised running** (running hard immediately after a station, training the first 200–400 m off the sled/lunges), **station-specific training at competition weights**, **Roxzone efficiency** (transitions are ~8–15% of race time [unverified] and "free" seconds), pacing discipline (start ~half-marathon effort, negative-split; athletes who go out >10 s/km too fast fade 18–22% by run 8 [unverified — no data source named]), and durability (tendons, eccentrics, trunk). Typical structure (per coaching brands): 4–6 sessions/week = 2–3 strength, 2–3 running, 1–2 hybrid metcons [unverified]; race-specific periodization over 12–13 weeks [unverified]. Sub-90-minute Open finishes typically require ~40–45 min of running plus efficient stations/transitions [unverified].
 
 **Adaptations.** Aerobic capacity + threshold, muscular endurance under load, running economy in a fatigued state, lactate tolerance.
 
@@ -161,7 +163,7 @@
 ---
 
 ## Method 11 — Sled Training for Conditioning
-**Protocol.** Push/pull/drag for distance intervals. Conditioning variants: light sled continuous drags (aerobic/LISS), moderate 50–60% loads for sprint-recovery intervals (HR spikes to 85–95% max then partial recovery on the walk back), heavy short pushes (strength-endurance). Backward drags emphasize quads with minimal eccentric/joint stress.
+**Protocol.** Push/pull/drag for distance intervals. Conditioning variants: light sled continuous drags (aerobic/LISS), moderate 50–60% loads for sprint-recovery intervals (HR spikes to 85–95% max then partial recovery on the walk back) [unverified], heavy short pushes (strength-endurance). Backward drags emphasize quads with minimal eccentric/joint stress.
 
 **Adaptations.** Metabolic conditioning, lower-body strength-endurance, high lactate response; minimal DOMS due to near-absent eccentric loading. West et al. (2014, *J Strength Cond Res* 28(1):265–272): backward sled drags at 75% body mass drove blood lactate from ~1.7 to ~12.4 mmol/L, confirming large metabolic stress, with only transient neuromuscular impairment.
 
@@ -198,7 +200,7 @@
 
 ### (b) Metabolic Health & Performance
 - 2–3 Zone 2 (fat oxidation, insulin sensitivity) + 1 sweet spot/threshold (LT2) + 1 short HIIT or SIT/REHIT (VO2max + insulin sensitivity, time-efficient).
-- Progress FTP/threshold via field test every 4–6 weeks.
+- Progress FTP/threshold via field test every 4–6 weeks [unverified].
 - Maps to: Zone 2 + threshold + Gibala SIT. **Mostly measurable (erg-anchored), medium complexity.**
 
 ### (c) Hyrox / Hybrid-Competition Readiness
@@ -212,16 +214,16 @@
 
 **Apple Watch optical HR (PPG) accuracy.**
 - **Steady state:** good agreement with ECG/chest strap; a living systematic review/meta-analysis (*npj Digital Medicine*, 2025; s41746-025-02238-1) reports the third-generation sensor (Series 6 onward, including Ultra) narrowing pooled limits of agreement to −3.68 to +2.59 bpm (8 studies).
-- **Intervals:** accuracy degrades with motion/sweat; a documented **5–15 second lag** to register sharp HR rises/falls — as summarized in validation reviews of the PPG smoothing window: "during intervals, the Apple Watch takes 5 to 15 seconds longer than an ECG or chest strap to register sharp heart rate increases at the start of a sprint... This lag results from the PPG algorithm's smoothing window, which trades responsiveness for noise rejection." Under-estimation grows at higher intensities. Implication: **do not use wrist HR to verify short intervals**; use it for steady-state confirmation and trends. Recommend a chest strap cross-check for interval HR precision.
+- **Intervals:** accuracy degrades with motion/sweat; a documented **5–15 second lag** to register sharp HR rises/falls [unverified — the validation review quoted below is not named] — as summarized in validation reviews of the PPG smoothing window: "during intervals, the Apple Watch takes 5 to 15 seconds longer than an ECG or chest strap to register sharp heart rate increases at the start of a sprint... This lag results from the PPG algorithm's smoothing window, which trades responsiveness for noise rejection." Under-estimation grows at higher intensities. Implication: **do not use wrist HR to verify short intervals**; use it for steady-state confirmation and trends. Recommend a chest strap cross-check for interval HR precision.
 - Grip-based compression (sleds, carries, barbell) further corrupts wrist PPG.
 
 **Which metrics best verify interval structure.** Machine **watts/pace/splits** (Concept2 PM5/ErgData, Symbio power) are objective, instantaneous, and lag-free — the gold standard for interval verification. The **HR-trace shape** (plateaus and area-under-curve) is a secondary corroborator; HR **peaks** during short work bouts are unreliable.
 
 **HR-zone anchoring approaches (reliability).**
-- **%HRmax formulas (220−age, 180−age):** convenient but individually imprecise (±5–12+ bpm error); lowest reliability.
+- **%HRmax formulas (220−age, 180−age):** convenient but individually imprecise (±5–12+ bpm error [unverified]); lowest reliability.
 - **LTHR field tests (e.g., 20–30 min TT to set threshold HR/FTP):** more individualized; good reliability; the practical default for this user.
 - **Lab testing (lactate/VO2 with ventilatory thresholds):** most accurate anchor for LT1/LT2 and Zone 2 ceiling; gold standard but not always accessible.
-- Recommendation: anchor zones to a field LTHR/FTP test, refine with the talk test for Zone 2, and re-test every 4–6 weeks.
+- Recommendation: anchor zones to a field LTHR/FTP test, refine with the talk test for Zone 2, and re-test every 4–6 weeks [unverified].
 
 **HR drift / decoupling (Pw:HR, Pa:HR) as fitness/compliance signal.** Compares output-to-HR ratio (efficiency factor) in the first vs second half of a steady effort. **<5% decoupling = solid aerobic durability for that duration** (Friel benchmark); **>5–10% = aerobic-base or fueling limitation, or effort was above aerobic threshold**. Power-based Pw:HR (erg/bike) is cleaner than pace-based Pa:HR (which needs grade-adjusted pace). This is an excellent automatable signal: rising efficiency factor over weeks = improving fitness; high single-session decoupling = the "easy" ride wasn't easy or the athlete is fatigued.
 
@@ -253,9 +255,9 @@
 
 ## Recommendations (staged, with thresholds)
 1. **Start (weeks 1–4): establish anchors.** Run an LTHR/FTP field test on the primary erg (RowErg or BikeErg) to set zones; do not rely on 220−age. Default to a polarized skeleton: 3× Zone 2 (45–60 min) + 1× Norwegian 4x4. All on single machines for clean data. *Threshold to advance:* consistent completion + decoupling <5% on Zone 2 rides.
-2. **Build (weeks 5–12): add one quality axis matched to goal.** Longevity → keep 1 VO2max/week; Metabolic → add 1 sweet spot + optional SIT/REHIT; Hyrox → introduce compromised-running and station work. *Threshold to progress load:* rising efficiency factor (watts/HR) and stable adherence ≥80% of planned sessions.
+2. **Build (weeks 5–12): add one quality axis matched to goal.** Longevity → keep 1 VO2max/week; Metabolic → add 1 sweet spot + optional SIT/REHIT; Hyrox → introduce compromised-running and station work. *Threshold to progress load:* rising efficiency factor (watts/HR) and stable adherence ≥80% of planned sessions [unverified].
 3. **Verify smartly.** Machine watts/splits are the source of truth for intervals; Apple Watch HR for Zone 2 confirmation and weekly decoupling trend. Prompt a chest-strap cross-check if the user wants precise interval HR. *Change trigger:* if wrist HR and machine watts disagree during intervals, trust watts.
-4. **Adherence guardrails.** If the user repeatedly abandons all-out SIT/Tabata (tolerability), substitute REHIT or 4x4. If easy days drift into the grey zone (HR audit), enforce "easy easy." *Re-test zones every 4–6 weeks.*
+4. **Adherence guardrails.** If the user repeatedly abandons all-out SIT/Tabata (tolerability), substitute REHIT or 4x4. If easy days drift into the grey zone (HR audit), enforce "easy easy." *Re-test zones every 4–6 weeks [unverified].*
 5. **Keep it simple unless competing.** Default to single-modality programming for health/metabolic goals; reserve high-complexity mixed-modal work for genuine Hyrox/hybrid preparation.
 
 ---
@@ -271,3 +273,75 @@
 
 ### Key sources cited
 Helgerud et al. 2007 (*Med Sci Sports Exerc*); Wisløff et al. 2007 (*Circulation*); Stöggl & Sperlich 2014 (*Frontiers in Physiology* 5:33); Seiler & Kjerland 2006; Milanović, Sporiš & Weston 2015 (*Sports Medicine* 45(10)); Tabata et al. 1996 (*Med Sci Sports Exerc* 28(10)); Gibala et al. 2006 / Burgomaster 2005 / Babraj 2009; Billat (vVO2max 30/30 research); Mandsager et al. 2018 (*JAMA Network Open* 1(6):e183605); West et al. 2014 (*J Strength Cond Res* 28(1)); *npj Digital Medicine* 2025 Apple Watch meta-analysis; San Millán (Peter Attia Drive #85/#201; The Proof podcast); Attia (Outlive framework; AMA #79); Patrick (FoundMyFitness Ep. #84); Galpin (Huberman Lab Guest Series 2023); Maffetone (180-formula); Hinshaw (aerobiccapacity.com / CrossFit); Carson (Concept2 / Engine by Carson); FasCat/TrainerRoad (sweet spot); TrainingPeaks (aerobic decoupling).
+---
+
+## Known weak claims (evidence audit, 2026-10)
+
+Every number in this dossier and in `styles/*.md` that has no source anywhere
+in the repo is tagged **[unverified]** where it appears. They are collected
+here so the coach can see at a glance which figures are practitioner
+conventions or unattributed summaries rather than findings. Rules for using
+them: cite as unverified, never as grade A; prefer the athlete's own field
+data over any of them; replace a tag only by naming a source in
+`knowledge/sources.yaml` and checking the claim there.
+
+Unsourced numbers (tagged in place):
+
+| Claim | Where |
+|---|---|
+| Wrist optical HR lags 5–15 s on sharp transitions (the quoted "validation review" is not named) | TL;DR; Compliance Verification; `norwegian-4x4.md`. Also used untagged in spec §5, `skills/coach/SKILL.md` guardrails |
+| Zone 2 = lactate ~1.5–2.0 mmol/L; ~60–70% HRmax; RPE 3–4/10 | Method 1; `zone2.md` |
+| First objective Zone 2 signal at ~6–8 wks | `zone2.md`; also spec §9 |
+| Acute insulin-sensitizing effect lasts ~24–72 h | `zone2.md`; also spec §9 |
+| 1×/week preserves most 4x4 gains; ~1×/wk maintains | Method 3; `norwegian-4x4.md`; also spec §9 |
+| 4x4 interval watts improve within 3–4 wks; miss >2 wks and gains stall; VO2max decay begins ~2–4 wks after stopping | `norwegian-4x4.md`; also spec §9 |
+| Threshold = ~95–105% FTP; RPE ~7/10; 2–3×/wk ceiling; ~4–8 wks to FTP gains; ≥2×/wk; 1×/wk maintains | Method 4; `threshold-sweet-spot.md`; also spec §9 |
+| Only ~4 bouts sustainable at true 170% VO2max; ~115% iVO2max for 7–8 bouts | Method 6 |
+| Short HIIT rep-watt gains in ~3–6 wks; 1×/wk maintains | `short-aerobic-hiit.md` |
+| SIT: 1–2×/wk maintains | `sit-rehit-tabata.md`; also spec §9 |
+| MAF test improves over 8–16 wk base phases | `maf.md`; also spec §9 |
+| Polarized needs 4–5 sessions/wk; <3 sessions makes a distribution meaningless | `polarized.md`; also spec §9 |
+| Unnamed HIIT-vs-MICT trial, cancer-adherence study (~87%), cardiac-rehab ">12 weeks" finding | Method 8 |
+| Hinshaw coached ~30 CrossFit Games champions | Method 9; `hinshaw-pace-diversity.md` |
+| Hinshaw pace-range gains within 4–8 wk (practitioner estimate) | `hinshaw-pace-diversity.md` |
+| Hyrox: running ~50% of race time; transitions ~8–15%; >10 s/km too fast → 18–22% fade by run 8; 12–13 wk block; ≥6 months from scratch; 4–6 sessions/wk; sub-90 needs ~40–45 min running | Method 10; `hyrox.md`; also spec §9 |
+| Sled sprint-recovery: 50–60% loads, HR 85–95% max | Method 11; `sled-conditioning.md` |
+| %HRmax formulas err ±5–12+ bpm | Compliance Verification |
+| Re-test zones every 4–6 weeks; progress FTP every 4–6 weeks | Templates; Compliance Verification; Recommendations; `threshold-sweet-spot.md`; also `templates/workspace/benchmarks.md` |
+| Adherence ≥80% as the progression threshold | Recommendations; also spec §13 |
+
+Cited, but the claim was not checked against the source (see
+`knowledge/sources.yaml`, `claim_checked: false`):
+
+- Apple Watch Series 6+ limits of agreement −3.68 to +2.59 bpm (8 studies):
+  the paper exists, but its abstract gives no third-generation subgroup.
+- Billat "~40% more time at VO2max": no paper named.
+- "VO2max ~6 wks — Gibala": the Gibala 2006 abstract does not say it (it is a
+  two-week study; Burgomaster 2005 reports no VO2peak change in two weeks).
+  Tagged in `sit-rehit-tabata.md`; also spec §9.
+- Polarized claim (1), "mostly easy plus some hard", graded A (Method 2
+  audit note; `polarized.md` `evidence_grade_split`): the dossier's headline
+  grade, kept, but the repo holds one RCT plus descriptive data for it, which
+  the legend would grade B/C — the A is unconfirmed.
+- Helgerud 2007 "~3–4% for threshold and no gain for long slow distance"
+  (Method 3): not in the abstract that was read; tagged in place. The
+  "up to ~13%" secondary-summary figure names no summary.
+- Wisløff 2007 absolute VO2peak values (13.0→19.0, 13.1→14.9 mL/kg/min) and
+  baseline LVEF 29% (Method 3): not in the abstract that was read; tagged in
+  place.
+- MAF formula support (Hoeg & Maffetone 2015 poster) and the 2023 J Clin Med
+  "±5+ bpm" analysis: neither could be identified.
+- FRIEND percentiles in `reference-values.yaml`: registry papers exist; the
+  numbers were not checked.
+- All practitioner and podcast sources (San Millán, Attia, Patrick, Galpin,
+  Maffetone, Hinshaw, Carson, FasCat/TrainerRoad, Friel/TrainingPeaks): grade
+  C/D by the legend, whatever their figures.
+
+Checked against a fetched abstract or text on 2026-10-03 (`claim_checked:
+true`): Helgerud 2007, Wisløff 2007, Stöggl & Sperlich 2014, Seiler & Kjerland
+2006, Seiler & Tønnessen 2009, Milanović 2015, Tabata 1996, Gibala 2006,
+Burgomaster 2005, Babraj 2009, Mandsager 2018, West 2014, Uth 2004 — each
+entry's `note` says exactly which figures were read and which were not.
+`claim_checked: true` covers **only the figures its note names as read**;
+any other figure attributed to the same source counts as unchecked (the
+Gibala and Helgerud items above are the cases in point).

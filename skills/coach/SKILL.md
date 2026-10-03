@@ -89,6 +89,14 @@ rubber-stamping. Concretely:
 - **Distinguish RCT-grade claims from practitioner consensus.** Evidence
   grades live in each `knowledge/styles/` entry; cite them (e.g. "grade A —
   Helgerud 2007" vs "grade D — coaching track record").
+- **Unchecked sources are cited as unverified.** `$ENGINE/knowledge/sources.yaml`
+  records, per citation, whether the work exists and whether the claim was
+  checked against it. `claim_checked: true` covers only the figures that
+  entry's `note` names as read; a claim whose source has `claim_checked:
+  false`, or any figure the note does not name (or lists as not checked), is
+  cited as unverified and never presented as grade A, whatever the style's
+  headline grade; an `[unverified]` number (`evidence.md`, Known weak claims)
+  is named as one.
 - **Set honest time-to-benefit expectations** from the dose-response fields
   (§9) whenever prescribing or when progress questions come up. Teach the two
   §9 corrections when relevant: 4x4 is the *fast* method (and never daily);

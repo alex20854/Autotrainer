@@ -8,6 +8,9 @@ protocol:
 primary_adaptations: [erg-specific aerobic power, pacing skill, 2k/benchmark performance]
 evidence_grade: D
 key_sources: ["Rob Carson (Engine by Carson; Underdogs Athletics endurance)", "Lizzy Carson (C2 world records; The Rowing Standard)"]
+key_source_ids: [carson-nd]
+evidence_grade_code: "D"
+studied_population: "no formal trials; coaching track record with Concept2 erg athletes and top CrossFit athletes (dossier Method 9)"
 machine_suitability:
   excellent: [rowerg, skierg, bikeerg]
   notes: "purpose-built for Concept2 ergs; PM5/ErgData log splits, watts, distance automatically"

@@ -10,14 +10,17 @@ protocol:
 primary_adaptations: [VO2max (stroke volume / cardiac output driven), lactate threshold velocity, endothelial function]
 evidence_grade: A
 key_sources: ["Helgerud 2007 (MSSE 39:665-71): 8 wks 3x/wk, VO2max +7.2%, SV +10%", "Wisloff 2007 (Circulation 115:3086-94)", "popularized by Rhonda Patrick"]
+key_source_ids: [helgerud-2007, wisloff-2007, patrick-nd]
+evidence_grade_code: "A"
+studied_population: "40 moderately trained men, 8 wk at 3x/wk (Helgerud 2007); 27 postinfarction heart-failure patients, mean age 75.5 (Wisloff 2007)"
 machine_suitability:
   excellent: [bikeerg, rowerg, skierg, airdyne, stairclimber, versaclimber, treadmill-run, run]
   notes: "BikeErg/RowErg preferred for precise interval wattage and safety at high intensity; incline treadmill running is the classic modality"
 verification_tier: 2
-minimum_effective_dose: "1x/wk maintains; 2-3x/wk to build"
-time_to_measurable_benefit: "~6-8 wks at 3x/wk for ~5-7% VO2max (Helgerud 2007: 8 wks); interval watts improve within 3-4 wks"
-consistency_requirement: "miss >2 wks and gains stall"
-detraining_decay: "VO2max decay begins ~2-4 wks after stopping (blood-volume/stroke-volume losses first); ~1x/wk maintains"
+minimum_effective_dose: "1x/wk maintains [unverified]; 2-3x/wk to build"
+time_to_measurable_benefit: "~6-8 wks at 3x/wk for ~5-7% VO2max (Helgerud 2007: 8 wks); interval watts improve within 3-4 wks [unverified]"
+consistency_requirement: "miss >2 wks and gains stall [unverified]"
+detraining_decay: "VO2max decay begins ~2-4 wks after stopping (blood-volume/stroke-volume losses first) [unverified]; ~1x/wk maintains [unverified]"
 contraindications: ["never daily — recovery-limited, 3x/wk is the studied ceiling", "uncontrolled cardiovascular symptoms -> refer out"]
 progression_rules:
   - "increase pace/power, not duration"
@@ -33,7 +36,7 @@ weeks at 3x/week, and it should never be daily.
 **Coaching notes.** Primary verification is per-interval avg watts: four
 near-equal hard bouts with four recovery dips (bout detection in
 `compute_metrics.py` gives the structure; Claude judges whether it matches the
-prescription). Wrist HR lags 5-15 s at interval starts, so use the HR trace to
+prescription). Wrist HR lags 5-15 s [unverified] at interval starts, so use the HR trace to
 confirm intervals 2-4 plateau near target and never penalize interval-1 HR.
 Target watts come from the athlete's demonstrated interval power, progressed
 per block.

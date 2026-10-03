@@ -5,13 +5,16 @@ protocol:
   structure: push/pull/drag intervals for distance
   variants:
     aerobic_drags: "light continuous drags (LISS)"
-    sprint_recovery: "moderate 50-60% loads; HR spikes to 85-95% max, partial recovery on walk-back"
+    sprint_recovery: "moderate 50-60% loads; HR spikes to 85-95% max, partial recovery on walk-back [unverified]"
     strength_endurance: "heavy short pushes"
     backward_drags: "quad emphasis, minimal eccentric/joint stress"
   frequency_per_wk: [1, 2]
 primary_adaptations: [metabolic conditioning, lower-body strength-endurance, high lactate response, minimal DOMS]
 evidence_grade: C
 key_sources: ["West 2014 (JSCR 28:265-72): backward drags at 75% BM drove lactate ~1.7 -> ~12.4 mmol/L", "limited RCTs for aerobic adaptation specifically"]
+key_source_ids: [west-2014]
+evidence_grade_code: "C"
+studied_population: "acute-response and sprint-performance studies; backward sled drags at 75% body mass (West 2014); few RCTs on aerobic adaptation"
 machine_suitability:
   excellent: [sled]
   notes: "requires sled + space; highly Hyrox-relevant"

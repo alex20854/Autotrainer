@@ -8,12 +8,18 @@ protocol:
 primary_adaptations: [aerobic base, fat oxidation, low-stress volume accumulation]
 evidence_grade: "D (formula) / C (principle)"
 key_sources: ["Maffetone (largely a 2015 conference poster: Hoeg & Maffetone)", "'easy means easy' principle well supported; strong practitioner record (Mark Allen)"]
+key_source_ids: [hoeg-maffetone-2015, maffetone-nd, jcm-2023]
+evidence_grade_code: "D/C"
+evidence_grade_split:
+  formula_180_minus_age: "D"
+  easy_means_easy_principle: "C"
+studied_population: "not stated in the repo; formula support is largely a 2015 conference poster, principle rests on practitioner record (dossier Method 7)"
 machine_suitability:
   excellent: [all]
   notes: "best on non-impact ergs/treadmill where holding a strict cap is easy"
 verification_tier: 1
 minimum_effective_dose: "3-4x/wk under the cap"
-time_to_measurable_benefit: "MAF test (pace/watts at capped HR) improves over 8-16 wk base phases"
+time_to_measurable_benefit: "MAF test (pace/watts at capped HR) improves over 8-16 wk base phases [unverified]"
 consistency_requirement: "strict cap discipline — seconds above cap are the compliance metric"
 detraining_decay: "slow (it IS base)"
 contraindications: ["the 180-age formula can misestimate individuals by ±5+ bpm — prefer field-tested LT1 anchors when available; MAF is the fallback framing"]

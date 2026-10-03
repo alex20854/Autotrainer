@@ -7,6 +7,19 @@
 # treadmill-based, so cycling comparisons run slightly conservative);
 # rowing & cycling elite values from sport-physiology literature (grade B/C,
 # see knowledge/evidence.md framing on practitioner-consensus numbers).
+#
+# Audit annotations (2026-10; values unchanged — see knowledge/sources.yaml):
+# - percentiles: the FRIEND registry papers exist (kaminsky-2015 and later),
+#   but these numbers were not checked against them [unverified]. That
+#   treadmill norms make cycling comparisons "slightly conservative" is
+#   itself unsourced [unverified].
+# - athletes: no paper is named for the rower or cyclist figures
+#   [unverified].
+# - estimate: the ACSM leg-cycling equation is named but not checked
+#   (acsm-nd); the FTP = 0.95 x P20 and pVO2max = P20 / 0.85 ratios have no
+#   source in the repo [unverified].
+# - hr_ratio_estimate: the 15.3 factor matches the Uth 2004 abstract
+#   (uth-2004, claim_checked), derived in well-trained men.
 
 percentiles:  # by sex, age decade: [50th, 90th]  ("average" and "top 10%")
   male:
@@ -22,7 +35,7 @@ percentiles:  # by sex, age decade: [50th, 90th]  ("average" and "top 10%")
     50-59: [27, 35]
     60-69: [24, 30]
 
-athletes:
+athletes:  # [unverified] — no source named for these figures
   - label: "Collegiate rower"
     vo2max: 65
     note: "men's heavyweight typically ~62-70; lightweight/women ~55-65"
@@ -35,8 +48,8 @@ athletes:
 # then ACSM leg-cycling VO2 = 10.8 x W / kg + 7. Grade C estimate; a
 # sub-maximal test biases it LOW (see method_caveats.power_estimate).
 estimate:
-  p20_to_pvo2max_divisor: 0.85
-  acsm_slope: 10.8
+  p20_to_pvo2max_divisor: 0.85   # [unverified] engineering assumption, no source in the repo
+  acsm_slope: 10.8               # ACSM leg-cycling equation (acsm-nd; not checked)
   acsm_intercept: 7
 
 # General caveats per estimation method, shown verbatim beside each of the

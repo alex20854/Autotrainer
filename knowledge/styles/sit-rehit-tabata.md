@@ -11,6 +11,9 @@ protocol:
 primary_adaptations: [VO2max, muscle oxidative capacity, insulin sensitivity, anaerobic capacity]
 evidence_grade: "A (efficacy) with adherence/tolerability caveats"
 key_sources: ["Gibala 2006; Burgomaster 2005; Babraj 2009 (insulin sensitivity)", "Tabata 1996 (MSSE 28:1327-30)"]
+key_source_ids: [gibala-2006, burgomaster-2005, babraj-2009, tabata-1996]
+evidence_grade_code: "A"
+studied_population: "not stated in the repo for Gibala/Burgomaster/Babraj; Tabata 1996 on a cycle ergometer (dossier Method 6)"
 machine_suitability:
   excellent: [bikeerg, airdyne]
   good: [rowerg, versaclimber, stairclimber]
@@ -18,9 +21,9 @@ machine_suitability:
   notes: "resistance + safety favor bike-type ergs; never force supramaximal effort onto a treadmill"
 verification_tier: 2
 minimum_effective_dose: "2-3x/wk, 10-25 min sessions"
-time_to_measurable_benefit: "~2-6 wks (oxidative markers in ~2 wks / 6 sessions; VO2max ~6 wks — Gibala)"
+time_to_measurable_benefit: "~2-6 wks (oxidative markers in ~2 wks / 6 sessions; VO2max ~6 wks — Gibala [unverified — not in the Gibala 2006 abstract])"
 consistency_requirement: "high per-session effort required; tolerability is the limiter"
-detraining_decay: "fast, like other high-intensity work; 1-2x/wk maintains"
+detraining_decay: "fast, like other high-intensity work; 1-2x/wk maintains [unverified]"
 contraindications:
   - "all-out Wingates cause pain/nausea/dizziness that hurt adherence — REHIT exists to fix this"
   - "'Tabata' classes are almost never the original ~170% VO2max protocol; do not assume its adaptations"

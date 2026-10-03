@@ -55,6 +55,9 @@ classification:
     - HKWorkoutActivityTypeWalking
     - HKWorkoutActivityTypeHiking
   promote_min_duration_s: 1800
+  # Records shorter than this can never be verified as sessions (spec §5) —
+  # false starts and probes are set aside automatically, reported by ingest.
+  min_session_s: 120
 
 # Apple Photos monitor-photo finder (find_monitor_photos.py). All optional —
 # engine defaults apply; add consoles the OCR vocabulary doesn't know yet.

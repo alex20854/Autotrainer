@@ -125,9 +125,18 @@ class McpClient:
             hint = {401: " (token rejected — re-copy it from the Server screen)"}.get(e.code, "")
             raise PullError(f"HTTP {e.code} from the app{hint}") from None
         except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
-            raise PullError(f"can't reach {self.endpoint}: {getattr(e, 'reason', e)}. Is Health "
-                            "Auto Export open in the foreground on the Server screen, on the "
-                            "same Wi-Fi as this Mac?") from None
+            reason = str(getattr(e, "reason", e))
+            if "No route to host" in reason or "Host is down" in reason:
+                hint = ("the phone is not on the network at this address: screen locked "
+                        "(Wi-Fi sleeps) or its address changed — wake it, check the Server "
+                        "screen's endpoint")
+            elif "Connection refused" in reason:
+                hint = ("nothing is serving on the phone — open Health Auto Export in the "
+                        "foreground on its Server screen (the server stops when backgrounded)")
+            else:
+                hint = ("is Health Auto Export open in the foreground on the Server screen, "
+                        "on the same Wi-Fi as this Mac?")
+            raise PullError(f"can't reach {self.endpoint}: {reason} — {hint}") from None
         if not expect_reply or not body.strip():
             return None
         return parse_mcp_body(body, ctype)

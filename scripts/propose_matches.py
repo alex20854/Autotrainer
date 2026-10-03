@@ -41,6 +41,7 @@ SIDECAR_DIR = REPO_ROOT / "data" / "derived" / "photos"
 PROPOSALS_PATH = REPO_ROOT / "data" / "derived" / "proposals.json"
 CONFIG_PATH = REPO_ROOT / "config" / "athlete.yaml"
 
+MIN_SESSION_S = 120  # seconds; classification.min_session_s overrides
 AUTO_MERGE_THRESHOLD = 0.9
 
 # Health workout types that are not cardio sessions for this system; kept in
@@ -168,6 +169,13 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
         and f"data/derived/workouts/{w['record_id']}.json" not in hard_claimed
     ]
     workouts = consolidate_records(workouts)
+    # Sub-2-minute records can never be verified as sessions (spec §5: no HR
+    # verification of bouts < 2 min) — false starts, probes, accidental taps.
+    # Set aside deterministically, reported, never proposed; the derived record
+    # stays citable (e.g. a max-HR probe referenced from benchmarks.md).
+    min_s = (classification or {}).get("min_session_s", MIN_SESSION_S)
+    too_short = [w for w in workouts if (w.get("duration_s") or 0) < min_s]
+    workouts = [w for w in workouts if (w.get("duration_s") or 0) >= min_s]
     sidecars = [s for s in sidecars if s["_sidecar_path"] not in claimed
                 and s.get("extracted")]
 
@@ -273,7 +281,8 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
                              "wrong-day photo, or non-workout shot"],
             })
     return {"auto_merge": auto, "ambiguous": ambiguous,
-            "baseline_routed": baseline_routed}
+            "baseline_routed": baseline_routed,
+            "too_short": [_workout_summary(w) for w in too_short]}
 
 
 def _case(pair: dict, reason: str | None = None) -> dict:
@@ -320,7 +329,8 @@ def main() -> int:
     args.out.write_text(json.dumps(proposals, indent=1) + "\n", encoding="utf-8")
     print(f"proposals: {len(proposals['auto_merge'])} auto-merge, "
           f"{len(proposals['ambiguous'])} ambiguous, "
-          f"{len(proposals['baseline_routed'])} records -> baseline rollup "
+          f"{len(proposals['baseline_routed'])} records -> baseline rollup, "
+          f"{len(proposals['too_short'])} too short "
           f"-> {args.out.relative_to(REPO_ROOT)}")
     return 0
 

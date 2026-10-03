@@ -50,6 +50,11 @@ strict:
    `_guard_write()`. The allowlist test pinning its osxphotos calls may only be
    widened for read-only members, deliberately. Never use photoscript/PhotoKit
    write paths (albums, keywords, edits, deletes).
+6. **Data quirks are engine work.** When an ingest exposes a format or source
+   behavior (units, naming, timing, permissions), fix it in the engine with a
+   test and record it in `docs/data-sources.md` — never just patch the one
+   workspace. Workspace-only edits are for athlete facts (anchors, equipment,
+   `ignore_records` for a specific deliberate probe), not for format handling.
 
 ## Privacy — this repo is PUBLIC
 

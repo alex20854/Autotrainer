@@ -73,7 +73,7 @@ def test_modality_mismatch_lowers_but_never_hard_fails():
     assert any("modality unusual" in n for n in notes)
 
 
-EMPTY = {"auto_merge": [], "ambiguous": [], "baseline_routed": []}
+EMPTY = {"auto_merge": [], "ambiguous": [], "baseline_routed": [], "too_short": []}
 
 
 def test_claimed_evidence_is_skipped():
@@ -213,3 +213,19 @@ def test_upgradable_record_without_photo_is_not_reproposed():
 def test_judged_session_record_stays_claimed():
     result = pm.propose([W1], [P1], {REF1}, MATCHING, upgradable=set())
     assert [c["kind"] for c in result["ambiguous"]] == ["orphan_photo"]
+
+
+def test_sub_two_minute_record_is_set_aside_not_proposed():
+    blip = workout("health-blip", "HKWorkoutActivityTypeCycling",
+                   "2026-09-06T17:02:49-04:00", "2026-09-06T17:04:17-04:00", 88)
+    result = pm.propose([blip, W1], [P1], set(), MATCHING)
+    assert [c["record_id"] for c in result["too_short"]] == ["health-blip"]
+    assert all(c["workout"]["record_id"] != "health-blip" for c in result["auto_merge"] + result["ambiguous"])
+    assert [c["kind"] for c in result["auto_merge"]] == ["pair"]   # W1 unaffected
+
+
+def test_min_session_is_configurable():
+    short = workout("health-s", "HKWorkoutActivityTypeRunning",
+                    "2026-08-07T07:00:00-04:00", "2026-08-07T07:04:00-04:00", 240)
+    assert pm.propose([short], [], set(), MATCHING, classification={"min_session_s": 300})["too_short"]
+    assert not pm.propose([short], [], set(), MATCHING, classification={"min_session_s": 120})["too_short"]

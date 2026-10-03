@@ -48,7 +48,9 @@ Skip this step on non-Mac setups; photos can always be dropped into
 ```
 
 Runs parsers → prep_photos → proposals → auto-merges → metrics → index.
-Read the step outputs; note counts.
+Read the step outputs; note counts. Records reported as *too short* were set
+aside automatically (false starts, probes) — mention them in one line; if one
+was deliberate (a max-HR probe), cite its derived record from `benchmarks.md`.
 
 ## 2. Vision extraction (your judgment work)
 

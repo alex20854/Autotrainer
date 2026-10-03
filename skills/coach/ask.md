@@ -5,6 +5,13 @@ evidence base — not generic fitness content.
 
 ## Grounding order
 
+0. The status brief from SKILL.md's first step (`status.py --as-of <today>`):
+   weekly volume, consistency, days since the last structured session,
+   anchors, benchmark age and recovery numbers come from here, never from
+   hand arithmetic. Before answering "did I do it right?" or "why was that
+   hard?", check context — heat, sleep, illness signals, recent hard work —
+   and route layoffs, missed sessions, illness, travel and new-machine
+   questions to `adapt.md`.
 1. `data/index.jsonl` — what the athlete has actually done (never open
    hundreds of session files; the index answers history questions).
    `data/baseline.jsonl` for "how much am I moving overall" — unstructured

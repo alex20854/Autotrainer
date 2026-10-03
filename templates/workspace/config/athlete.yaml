@@ -83,6 +83,14 @@ photo_finder:
   extra_brands: []          # e.g. [Keiser]
   extra_terms: []
 
+# Status facts (scripts/status.py) — all optional; engine defaults shown.
+# These only set what the facts are measured against; status.py never judges.
+# status:
+#   unstructured_modalities: [walk, treadmill-walk]  # engineering default: not counted as structured sessions
+#   consistency_sessions: 3        # structured sessions per ISO week; practitioner heuristic [unverified] after spec §9's minimum viable week
+#   benchmark_cadence_days: 42     # engineering default from benchmarks.md's "re-test every 4-6 weeks"
+#   resting_hr_elevated_bpm: 5     # resting HR this far above its 28-day median counts toward days_elevated; practitioner heuristic [unverified]
+
 # Reconciliation settings (spec §7).
 matching:
   photo_window_after_end_s: 600     # EXIF must fall in [start, end + 10 min]

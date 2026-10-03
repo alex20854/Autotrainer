@@ -205,6 +205,46 @@ metric), merged so points survive after old raw exports are deleted:
 Recovery signals for reviews (resting-HR / HRV spikes) and estimation inputs
 (Apple's VO2max) live here.
 
+## Status facts
+
+Produced on demand by `scripts/status.py` (code and the exact JSON contract:
+`scripts/lib/facts.py` module docstring). Nothing is stored: it is a read-only
+view over the files above, so playbooks and the dashboard read facts instead
+of computing them by hand. `--json` prints the dict with sorted keys,
+byte-stable across runs; the default output is a brief of at most 15 lines.
+Facts only — measurements, dates, counts and booleans against configured
+thresholds; never advice, scores or verdicts.
+
+- **Reference date.** `as_of` is the newest date in the data (index rows,
+  baseline weeks, metric points), never the wall clock. `--as-of YYYY-MM-DD`
+  overrides it (playbooks pass today's date so a stale ledger shows as
+  stale); dated data after `as_of` is ignored, while goal, plan, review,
+  anchors and pipeline always reflect the current files.
+- **sessions / weeks / consistency.** A structured session is an index row
+  whose modality is not in `status.unstructured_modalities`. `weeks` are
+  contiguous ISO weeks from the first session's week to the `as_of` week,
+  zero-filled, oldest first; `baseline_min` comes from `baseline.jsonl`.
+  `consistency` counts weeks with at least `status.consistency_sessions`
+  structured sessions; the current streak skips an `as_of` week that has not
+  met the threshold yet.
+- **benchmarks.** Headings in `benchmarks.md` of the form
+  `### YYYY-MM-DD — <title>` (hyphen, en or em dash) outside code fences;
+  `past_cadence` is `age_days > status.benchmark_cadence_days`.
+- **anchors.missing.** Null `hr_max` / `lthr` / `hr_resting`, plus each null
+  field of a `power.<modality>` slot that a machine in `equipment` maps to.
+- **goal / plan / review.** `goal.active` needs a filled `- Track:` line in
+  the `## Active goal` section of `goals.md`; `plan.exists` is
+  `plans/<ISO week of as_of>.md`; `latest` values are the newest file stems.
+- **recovery.** Latest value, 7- and 28-day medians (with `n`), the delta to
+  the 28-day median, and `days_elevated`: consecutive most-recent resting-HR
+  days at or above the 28-day median plus `status.resting_hr_elevated_bpm`.
+- **pipeline.** Newest workout end, pending and inbox photo counts, ambiguous
+  reconciliation cases.
+
+The thresholds are engineering defaults or practitioner heuristics
+[unverified], overridable under an optional `status:` block in
+`config/athlete.yaml`; a wrong-typed override falls back to the default.
+
 ## Photo extraction sidecar
 
 Path: `data/derived/photos/<photo stem>.yaml`. EXIF fields are written by
@@ -254,6 +294,18 @@ prescriptions:
 Human-readable prescriptions: the what, the why, and the §9 time-to-benefit
 context for each.
 ```
+
+Plan frontmatter also carries (additive):
+
+- `status`: `active` | `draft`. `draft` is a provisional block written while
+  there is no active goal (a re-entry block from `skills/coach/adapt.md`).
+  Draft plans are never compliance-scored, and their body says so. Absent
+  means `active`.
+- `goal_track`: the active goal's track id from `goals.md`, or `pending` when
+  `status: draft`.
+- `targets` may carry `hr_ceiling` (bpm): an HR cap for easy or HR-only work
+  (re-entry, machines without power anchors). No script reads plan targets
+  yet; the vocabulary is the contract for a future plan-vs-actual script.
 
 ## config/athlete.yaml
 

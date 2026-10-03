@@ -7,6 +7,17 @@ trends read, next week adjusted, and a report in `reports/YYYY-Www.md`.
 
 Run `/coach ingest` first (or confirm it just ran).
 
+**Status facts first.** Take facts from the status brief SKILL.md's first step
+produced (`status.py --as-of <today>`), not from arithmetic over the index. If
+the week's plan has `status: draft` (a no-goal re-entry block), do not
+compliance-score it: record which prescriptions were done and how, write no
+`compliance:` blocks, and recommend `/coach setup`. Before calling any session
+non-compliant, check context — heat, sleep, illness signals
+(`recovery.resting_hr.days_elevated`, the HRV delta, symptoms in notes), recent
+hard work, travel or an unfamiliar machine. Name the miss honestly, record the
+context next to the score, and apply `adapt.md` to next week rather than
+carrying the debt forward.
+
 ## 2. Resolve ambiguities (conversation, not a queue UI)
 
 For each case in `data/derived/proposals.json: ambiguous[]`, present it the

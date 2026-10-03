@@ -95,6 +95,12 @@ photo_finder:
 #   benchmark_cadence_days: 42     # engineering default from benchmarks.md's "re-test every 4-6 weeks"
 #   resting_hr_elevated_bpm: 5     # resting HR this far above its 28-day median counts toward days_elevated; practitioner heuristic [unverified]
 
+# Dashboard (scripts/build_dashboard.py) — optional.
+# dashboard:
+#   show_recovery: false   # true adds a resting-HR / HRV numbers strip; off by
+#                          # default because the hosted page can be shared and
+#                          # recovery values are more sensitive than workout totals
+
 # Reconciliation settings (spec §7).
 matching:
   photo_window_after_end_s: 600     # EXIF must fall in [start, end + 10 min]

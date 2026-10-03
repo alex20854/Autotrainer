@@ -327,10 +327,55 @@ self-contained rendering (inline CSS/SVG, no external requests) of
 `config/athlete.yaml` and `benchmarks.md`. Byte-identical for identical
 inputs; nothing reads the wall clock.
 
-- **Data through** is the status facts' `as_of` (the newest date in the data).
-  "Training, last 7 days" and "Baseline this week" are counted back from the
-  newest session date instead (daily health metrics usually run ahead of
-  workout exports); both tiles are omitted when there are no sessions.
+- **Status band** (top of the page, above the tiles): the status facts
+  restated as facts only — `data through <as_of>`; the last structured
+  session's date, modality and days before `as_of`; weeks meeting
+  `status.consistency_sessions` (X of Y) and the current streak; the newest
+  benchmark's date, age and configured cadence (or `no benchmarks yet`); the
+  goal track (or `none set`); whether `plans/<as_of week>.md` exists. No
+  advice or verdict words.
+- **Training vs baseline.** "Training, last 7 days" and the weekly
+  minutes-in-zone chart count structured sessions only (modalities not in
+  `status.unstructured_modalities`). Unstructured sessions (walks by default)
+  appear only in the Baseline card and the "Baseline this week" tile, added
+  to the `baseline.jsonl` rollup. "Training, last 7 days" is counted back
+  from the newest session date, not `as_of` (daily health metrics usually run
+  ahead of workout exports), and names that date. "Baseline this week" is the
+  `as_of` week (the Baseline chart's last bar; the rollup comes from the same
+  health export as the metrics) and names that week. Both are omitted with no
+  sessions.
+- **Axes.** Per-session charts (efficiency factor, average watts, decoupling,
+  HR drift) place points by date on a linear axis from the first plotted date
+  to `as_of`; the last tick is `as_of` and the line is not drawn across gaps
+  longer than 21 days (a display default), so a layoff reads as empty space.
+  Weekly charts use contiguous, zero-filled ISO weeks ending at the `as_of`
+  week, the most recent 26 at most: the zone chart the facts' `weeks`; the
+  Baseline chart starts at the earlier of the facts' first week and the
+  earliest `baseline.jsonl` week, so walks from before the first session
+  show. When all such data is older than the weeks shown, the card says so
+  (`no … in the 26 weeks to <week>`) rather than `yet`.
+- **Recent sessions table**: the 12 newest index rows; a column empty for
+  every listed row is dropped; `source` labels each row from `source_kinds`
+  (`Health`, `Photo`, `C2`, `Manual` for `user`; other kinds as written). The
+  table scrolls sideways inside its card with the date column pinned.
+- **Recovery strip** (opt-in): resting HR and HRV from the status facts —
+  latest, 7- and 28-day medians with counts, latest minus the 28-day median,
+  and resting-HR days elevated. Numbers only. Rendered only with
+  `dashboard: {show_recovery: true}` in `config/athlete.yaml` (exactly
+  `true`); default off because the hosted page can be shared and these values
+  are more sensitive than workout totals. Additive key, no migration.
+- **Phone and accessibility**: readable at a 375 px viewport (16 px gutter,
+  no horizontal page scroll); chart text renders at about 11 px or larger at
+  every viewport from 375 px up, phone landscape and two-column widths
+  included (the SVG text size is raised wherever a chart is narrower than its
+  470-unit viewBox); text colour
+  tokens meet WCAG AA (4.5:1) on page and card backgrounds in light and dark
+  themes; every tooltip target is focusable (`tabindex="0"`) with an
+  `aria-label` equal to its tooltip, which also shows on focus and tap and
+  stays up while focus scrolls its target into view; each chart SVG has
+  `role="group"` and an `aria-label` describing it (`group`, not `img`: an
+  img's children are presentational, which would hide the labelled targets
+  from assistive technology).
 - **Benchmarks table**: one row per dated `benchmarks.md` heading, by the same
   heading rule as the status facts (`### YYYY-MM-DD - <title>`, hyphen, en or
   em dash), with that section's first `- Result:` line (`—` when absent).

@@ -16,3 +16,6 @@ data/derived/proposals.json
 config/privacy.local.yaml
 
 .DS_Store
+
+# Health Auto Export server endpoint + bearer token (pull_health.py) — local only
+config/health_server.local.yaml

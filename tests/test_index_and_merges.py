@@ -100,3 +100,39 @@ def test_apply_merges_pair(tmp_path, monkeypatch):
     fm2 = dict(fm, start="2026-08-05T18:00:00-04:00")
     path3 = am.write_session(fm2, body, tmp_path / "sessions")
     assert path3.name == "2026-08-05-bikeerg-2.md"
+
+
+def _health_only(start, **over):
+    fm = {"id": None, "date": start[:10], "start": start, "end": start[:11] + "06:30:00-04:00",
+          "modality": "bike", "machine": None, "duration_s": 1800, "hr_avg": 140, "hr_max": 150,
+          "watts_avg": None, "distance_m": None, "kcal": 300,
+          "sources": [{"kind": "health", "ref": "data/derived/workouts/health-x.json", "confidence": "high"}],
+          "match_confidence": 1.0, "match_method": "auto", "prescription_id": None,
+          "compliance": None, "computed": None}
+    fm.update(over)
+    return fm
+
+
+def test_upgrade_replaces_superseded_file_when_modality_changes(tmp_path):
+    import apply_merges as am
+    from lib import frontmatter, sessions as sessions_lib
+    start = "2026-09-12T15:38:00-04:00"
+    old = am.write_session(_health_only(start), "_Single-source session._\n", tmp_path)
+    assert old.name == "2026-09-12-bike.md"
+    assert sessions_lib.upgradable_refs(tmp_path) == {"data/derived/workouts/health-x.json"}
+    upgraded = _health_only(start, modality="bikeerg", machine="concept2-bikeerg", watts_avg=142)
+    upgraded["sources"].append({"kind": "photo", "ref": "data/raw/photos/p.heic"})
+    new = am.write_session(upgraded, "_Auto-merged._\n", tmp_path)
+    assert new.name == "2026-09-12-bikeerg.md" and not old.exists()
+    assert [p.name for p in (tmp_path / "2026").iterdir()] == ["2026-09-12-bikeerg.md"]
+    assert frontmatter.load(new)[0]["id"] == "2026-09-12-bikeerg"
+
+
+def test_judged_session_is_never_replaced(tmp_path):
+    import apply_merges as am
+    from lib import sessions as sessions_lib
+    start = "2026-09-12T15:38:00-04:00"
+    judged = am.write_session(_health_only(start, compliance={"score": 0.9}), "x\n", tmp_path)
+    assert sessions_lib.upgradable_refs(tmp_path) == set()
+    am.write_session(_health_only(start, modality="bikeerg"), "y\n", tmp_path)
+    assert judged.exists()   # left alone; propose would not have offered its record anyway

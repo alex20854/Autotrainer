@@ -50,6 +50,7 @@ lives in a separate **workspace** repo.
 |---|---|---|
 | Monitor photos | `data/raw/photos/` | after every machine session; EXIF time is the matching key. On a Mac, `/coach ingest` can find them in Apple Photos for you (`find_monitor_photos.py`: OCR + workout timing) |
 | Health Auto Export JSON | `data/raw/health/` | ingest is idempotent — drop exports whenever |
+| Straight from the phone | `pull_health.py` → `data/raw/health/` | Health Auto Export Premium's MCP server: open the app on its Server screen, `/coach ingest` pulls the missing window with full HR series. Token lives in gitignored `config/health_server.local.yaml` |
 | Apple Health `export.xml` | `data/raw/health/` | backfill; gitignored (huge), parsed into committed derived records |
 | C2 Logbook CSV | `data/raw/c2/` | opportunistic |
 

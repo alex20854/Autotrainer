@@ -72,7 +72,7 @@ def _to_record(w: dict, source: Path) -> dict | None:
             hr = {"avg": round(avg) if avg else None, "max": round(mx) if mx else None, "series": []}
 
     kcal = _qty(w.get("activeEnergyBurned") or w.get("activeEnergy"))
-    distance_km = _qty(w.get("distance"))
+    distance_m = _distance_m(w.get("distance"))
 
     return records.make_record(
         source_kind="health",
@@ -82,7 +82,7 @@ def _to_record(w: dict, source: Path) -> dict | None:
         end=end,
         duration_s=_duration_s(_qty(w.get("duration")), start, end),
         kcal=round(kcal) if kcal is not None else None,
-        distance_m=round(distance_km * 1000) if distance_km is not None else None,
+        distance_m=distance_m,
         hr=hr,
     )
 
@@ -96,6 +96,21 @@ def _duration_s(value: float | None, start: str, end: str) -> float | None:
     span = (records.parse_dt(end) - records.parse_dt(start)).total_seconds()
     as_minutes, as_seconds = value * 60, value
     return as_minutes if abs(as_minutes - span) <= abs(as_seconds - span) else as_seconds
+
+
+DISTANCE_TO_M = {"m": 1.0, "km": 1000.0, "mi": 1609.344, "yd": 0.9144, "ft": 0.3048}
+
+
+def _distance_m(value) -> int | None:
+    """Distance in meters, honoring the export's own units. Health Auto Export
+    reports distance in the phone's locale unit (miles for US users), so the
+    `units` field is authoritative; a bare number is taken as km."""
+    qty = _qty(value)
+    if qty is None:
+        return None
+    units = value.get("units") if isinstance(value, dict) else None
+    factor = DISTANCE_TO_M.get(str(units).lower(), 1000.0) if units else 1000.0
+    return round(qty * factor)
 
 
 def _qty(value) -> float | None:

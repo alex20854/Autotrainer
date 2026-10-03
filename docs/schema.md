@@ -79,6 +79,14 @@ record is *promoted* to the session ledger instead when its duration reaches
 `promote_min_duration_s` or a monitor photo pairs with it; records claimed by
 sessions never appear here (no double counting). One JSON object per ISO week:
 
+**Late-arriving sources.** A Health-only session written by `apply_merges`
+(`match_method: auto`, one `health` source, no `compliance`, no `prescription_id`)
+is *upgradable*: if a monitor photo later pairs cleanly with its record,
+`propose_matches` proposes the pair and `apply_merges` rewrites the session in
+place — the id changes if the modality does (`…-bike` → `…-bikeerg`) and the
+superseded file is removed. Sessions carrying judgment are never rewritten; a
+late source for those surfaces as an `attach_to_session` case.
+
 ```json
 {"week": "2026-W32", "count": 5, "minutes": 118, "distance_m": 9200,
  "kcal": 410, "by_type": {"Outdoor Walk": 5}, "hr_avg": 96}

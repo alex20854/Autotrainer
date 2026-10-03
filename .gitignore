@@ -3,6 +3,7 @@
 /data/
 /config/athlete.yaml
 /config/privacy.local.yaml
+/config/health_server.local.yaml
 /goals.md
 /benchmarks.md
 /plans/

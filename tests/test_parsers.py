@@ -70,3 +70,12 @@ def test_c2_summary_csv(tmp_path):
     assert rec["kcal"] == 390
     assert rec["hr"]["avg"] == 128
     assert rec["watts"] == [[0, 142.0]]
+
+
+def test_distance_honors_export_units():
+    import parse_auto_export as pa
+    assert pa._distance_m({"qty": 1.0, "units": "mi"}) == 1609
+    assert pa._distance_m({"qty": 2.5, "units": "km"}) == 2500
+    assert pa._distance_m({"qty": 800, "units": "m"}) == 800
+    assert pa._distance_m(3.0) == 3000          # bare number: km (legacy)
+    assert pa._distance_m(None) is None

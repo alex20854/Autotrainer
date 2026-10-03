@@ -191,3 +191,25 @@ def test_back_to_back_workouts_do_not_collapse():
                      "2026-08-06T06:26:00-04:00", "2026-08-06T06:50:00-04:00", 1440)
     result = pm.propose([first, second], [], set(), MATCHING)
     assert len(result["auto_merge"]) == 2
+
+
+REF1 = "data/derived/workouts/health-a.json"
+
+
+def test_late_photo_upgrades_health_only_session():
+    # W1 already became a Health-only session; its photo arrives on a later ingest
+    result = pm.propose([W1], [P1], {REF1}, MATCHING, upgradable={REF1})
+    kinds = [c["kind"] for c in result["auto_merge"]]
+    assert kinds == ["pair"] and result["auto_merge"][0]["upgrades_session"] is True
+    assert result["ambiguous"] == []
+
+
+def test_upgradable_record_without_photo_is_not_reproposed():
+    session = {"id": "2026-08-05-bike", "start": W1["start"], "end": W1["end"], "modality": "bike"}
+    result = pm.propose([W1], [], {REF1}, MATCHING, sessions=[session], upgradable={REF1})
+    assert result["auto_merge"] == [] and result["ambiguous"] == []
+
+
+def test_judged_session_record_stays_claimed():
+    result = pm.propose([W1], [P1], {REF1}, MATCHING, upgradable=set())
+    assert [c["kind"] for c in result["ambiguous"]] == ["orphan_photo"]

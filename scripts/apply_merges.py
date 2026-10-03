@@ -21,6 +21,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import frontmatter, records
+from lib import sessions as sessions_lib
 from lib import workspace
 
 REPO_ROOT = workspace.root()
@@ -142,6 +143,15 @@ def write_session(fm: dict, body: str, sessions_dir: Path) -> Path:
     date, modality = fm["date"], fm["modality"]
     year_dir = sessions_dir / date[:4]
     stem = f"{date}-{modality}"
+    # A late photo can upgrade a Health-only session whose modality — hence
+    # filename — changes (2026-09-12-bike -> 2026-09-12-bikeerg). Remove the
+    # superseded file so one training bout never has two sessions; files in
+    # this stem's own family are handled by the overwrite-in-place loop below.
+    for old in (sorted(year_dir.glob(f"{date}-*.md")) if year_dir.is_dir() else []):
+        old_fm, _ = frontmatter.load(old)
+        if (old_fm.get("start") == fm["start"] and old.stem != stem
+                and not old.stem.startswith(f"{stem}-") and sessions_lib.is_upgradable(old_fm)):
+            old.unlink()
     path = year_dir / f"{stem}.md"
     n = 2
     while path.exists():

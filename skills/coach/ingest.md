@@ -3,12 +3,28 @@
 Outcome: all new raw data normalized, photos extracted, auto-merges applied,
 index rebuilt, and the athlete told what needs review.
 
-## 0. Find new monitor photos (macOS, Apple Photos)
+## 0. Fresh data from the phone
 
-Parse Health exports first so the finder can use workout end times, then scan:
+**Health.** If the workspace has `config/health_server.local.yaml`, the athlete
+runs Health Auto Export's MCP server: ask them to open the app on its Server
+screen (same Wi-Fi; the server stops when the app leaves the foreground), then
+
+```
+"$PY" "$ENGINE/scripts/pull_health.py"      # --since YYYY-MM-DD to widen; --dry-run to preview
+```
+
+writes an export-shaped file into `data/raw/health/` (routes never requested,
+location keys scrubbed). Report workouts pulled and how many carry HR series.
+No server config → the athlete drops exports there by hand. Either way, parse
+before the photo finder so it can use workout end times:
 
 ```
 "$PY" "$ENGINE/scripts/parse_auto_export.py"
+```
+
+**Photos (macOS, Apple Photos).**
+
+```
 "$PY" "$ENGINE/scripts/find_monitor_photos.py"          # add --dry-run to preview
 ```
 
@@ -61,7 +77,8 @@ for s in propose_matches apply_merges compute_metrics build_index; do
   "$PY" "$ENGINE/scripts/$s.py" || break; done
 ```
 
-(The extractions may enable new pairings.)
+(The extractions may enable new pairings — including upgrading Health-only
+sessions written in step 1; their ids change if the modality does.)
 
 ## 4. Refresh the hosted dashboard
 

@@ -10,6 +10,7 @@ remembering across sessions must be written to a file in it.
 | Workspace path | What | Who writes it |
 |---|---|---|
 | `config/athlete.yaml` | zone anchors, equipment, matching config | you (`setup`, reviews) |
+| `config/health_server.local.yaml` | phone pull endpoint + token (gitignored) | the athlete |
 | `data/inbox/photos/` | photo-finder candidates awaiting your review (gitignored) | `find_monitor_photos.py` |
 | `data/raw/` | immutable inputs (photos, exports); health/ is gitignored | never modified, only added |
 | `data/derived/workouts/` | normalized per-workout JSON incl. HR series | parser scripts |

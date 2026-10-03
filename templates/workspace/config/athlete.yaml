@@ -74,12 +74,14 @@ matching:
   # Learned mapping: monitor/console machine -> plausible Apple Health workout
   # types. Lookup failures LOWER confidence, never hard-fail (spec §7).
   # /coach review appends new pairings here as they are learned.
+  # Two spellings per machine: HealthKit identifiers (export.xml backfill) and the
+  # display names Health Auto Export / the phone pull use ("Indoor Cycling").
   modality_map:
     concept2-rowerg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeOther]
     concept2-skierg:   [HKWorkoutActivityTypeRowing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
-    concept2-bikeerg:  [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeOther]
-    airdyne:           [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther, Elliptical]
-    stairclimber:      [HKWorkoutActivityTypeStairClimbing, HKWorkoutActivityTypeStairs, HKWorkoutActivityTypeOther]
+    concept2-bikeerg:  [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeOther, Indoor Cycling, Cycling, Other]
+    airdyne:           [HKWorkoutActivityTypeCycling, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther, Elliptical, Indoor Cycling, Cycling, Cross Training, Other]
+    stairclimber:      [HKWorkoutActivityTypeStairClimbing, HKWorkoutActivityTypeStairs, HKWorkoutActivityTypeOther, Stair Climbing, Stairs, Other]
     versaclimber:      [HKWorkoutActivityTypeClimbing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
-    exercise-bike:     [HKWorkoutActivityTypeCycling]
+    exercise-bike:     [HKWorkoutActivityTypeCycling, Indoor Cycling, Cycling]
     treadmill:         [HKWorkoutActivityTypeRunning, HKWorkoutActivityTypeWalking]

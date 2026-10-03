@@ -152,13 +152,20 @@ def overlapping_session(workout: dict, sessions: list[dict], slack_s: float = 90
 
 def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
             matching: dict, sessions: list[dict] | None = None,
-            classification: dict | None = None) -> dict:
+            classification: dict | None = None,
+            upgradable: set[str] | None = None) -> dict:
+    """`claimed`: refs held by any session. `upgradable`: the subset held only
+    by Health-only auto sessions (sessions_lib.is_upgradable) — those records
+    stay eligible to pair with a late-arriving photo; without one they are not
+    re-proposed."""
     ignored = set(matching.get("ignore_records") or [])
+    upgradable = set(upgradable or ())
+    hard_claimed = set(claimed) - upgradable
     workouts = [
         w for w in workouts
         if w["workout_type"] not in NON_CARDIO_TYPES
         and w["record_id"] not in ignored
-        and f"data/derived/workouts/{w['record_id']}.json" not in claimed
+        and f"data/derived/workouts/{w['record_id']}.json" not in hard_claimed
     ]
     workouts = consolidate_records(workouts)
     sidecars = [s for s in sidecars if s["_sidecar_path"] not in claimed
@@ -219,7 +226,12 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
         if contested:
             ambiguous.append(_case(pair, "evidence contested — another viable pairing exists"))
         elif pair["confidence"] >= AUTO_MERGE_THRESHOLD:
-            auto.append(_case(pair))
+            case = _case(pair)
+            if f"data/derived/workouts/{wid}.json" in upgradable:
+                case["upgrades_session"] = True
+                case["evidence"] = list(case["evidence"]) + [
+                    "upgrades the existing Health-only session in place"]
+            auto.append(case)
         else:
             ambiguous.append(_case(pair, "confidence below auto-merge threshold"))
 
@@ -228,6 +240,8 @@ def propose(workouts: list[dict], sidecars: list[dict], claimed: set[str],
     # to Claude as attach cases, never as duplicate sessions
     for w in workouts:
         if w["record_id"] not in used_w:
+            if f"data/derived/workouts/{w['record_id']}.json" in upgradable:
+                continue  # already a session; nothing new to propose without a photo
             existing = overlapping_session(w, sessions or [])
             if existing:
                 ambiguous.append({
@@ -297,9 +311,11 @@ def main() -> int:
     workouts = records.load_records(args.workouts_dir)
     sidecars = load_sidecars(SIDECAR_DIR) if SIDECAR_DIR.is_dir() else []
     claimed = already_claimed(SESSIONS_DIR)
+    upgradable = sessions_lib.upgradable_refs(SESSIONS_DIR)
     sessions = load_sessions(SESSIONS_DIR)
 
-    proposals = propose(workouts, sidecars, claimed, matching, sessions, classification)
+    proposals = propose(workouts, sidecars, claimed, matching, sessions, classification,
+                        upgradable=upgradable)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(proposals, indent=1) + "\n", encoding="utf-8")
     print(f"proposals: {len(proposals['auto_merge'])} auto-merge, "

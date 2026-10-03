@@ -381,6 +381,34 @@ def stage_match(photo, cfg: dict, download: bool, *, photos_ok: bool = True):
     return path, photos_ok, ""
 
 
+def classify(pool_items, *, seen, in_album, pending_set, ends, cfg, progress=None):
+    """Sort the scan pool -> (matches, near_misses, dropped, scanned, skipped).
+
+    dropped = photos carried over from the pending list that no longer reach
+    min_score under the current scoring: they leave the pending list, but they
+    are reported, never discarded silently."""
+    matches, near_misses, dropped, scanned, skipped = [], [], [], 0, 0
+    total = len(pool_items)
+    for i, (uuid, photo) in enumerate(sorted(pool_items, key=lambda kv: kv[1].date), 1):
+        if progress and (i % 25 == 0 or i == total):
+            progress(i, total)
+        if uuid.upper() in seen or photo.intrash:
+            skipped += 1
+            continue
+        scanned += 1
+        if uuid in in_album:
+            matches.append((photo, None, ["album"]))
+            continue
+        score, hits = score_photo(ocr_lines(photo, cfg["ocr_confidence"]), photo.date, ends, cfg)
+        if score >= cfg["min_score"]:
+            matches.append((photo, score, hits))
+        elif "near_workout_end" in hits:
+            near_misses.append((photo, score, hits))
+        elif uuid.upper() in pending_set:
+            dropped.append((photo, score, hits))
+    return matches, near_misses, dropped, scanned, skipped
+
+
 def _photos_backend():
     """The deferred imports scan() needs (osxphotos is macOS-only and slow to
     import). Kept in one tested function so a wrong import path can't hide
@@ -419,25 +447,12 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
     pool.update({p.uuid: p for p in db.photos(uuid=sorted(retry))} if retry else {})
 
     ends = workout_ends(records.load_records())
-    matches, near_misses, scanned, skipped = [], [], 0, 0
-    total = len(pool)
-    print(f"photo finder: reading text from up to {total} photo(s) "
+    pending_set = {u.upper() for u in state.get("pending", [])}
+    print(f"photo finder: reading text from up to {len(pool)} photo(s) "
           f"({since:%Y-%m-%d} -> {until:%Y-%m-%d})...", flush=True)
-    for i, (uuid, photo) in enumerate(sorted(pool.items(), key=lambda kv: kv[1].date), 1):
-        if i % 25 == 0 or i == total:
-            print(f"  {i}/{total}", flush=True)
-        if uuid.upper() in seen or photo.intrash:
-            skipped += 1
-            continue
-        scanned += 1
-        if uuid in in_album:
-            matches.append((photo, None, ["album"]))
-            continue
-        score, hits = score_photo(ocr_lines(photo, cfg["ocr_confidence"]), photo.date, ends, cfg)
-        if score >= cfg["min_score"]:
-            matches.append((photo, score, hits))
-        elif "near_workout_end" in hits:
-            near_misses.append((photo, score, hits))
+    matches, near_misses, dropped, scanned, skipped = classify(
+        list(pool.items()), seen=seen, in_album=in_album, pending_set=pending_set, ends=ends, cfg=cfg,
+        progress=lambda i, n: print(f"  {i}/{n}", flush=True))
 
     print(f"photo finder: {since:%Y-%m-%d} -> {until:%Y-%m-%d}: {scanned} scanned, "
           f"{skipped} already seen, {len(matches)} match(es); {len(ends)} workout end times")
@@ -467,6 +482,9 @@ def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download
     for photo, score, hits in near_misses:
         print(f"  near-miss {photo.uuid}  {photo.date:%Y-%m-%d %H:%M}  score {score}  "
               f"[{', '.join(hits)}] — not staged; add to album '{album}' if it's a monitor")
+    for photo, score, hits in dropped:
+        print(f"  dropped {photo.uuid}  {photo.date:%Y-%m-%d %H:%M}  score {score} < {cfg['min_score']} under "
+              f"current scoring  [{', '.join(hits)}] — no longer pending; add it to album '{album}' if it is a monitor")
     if not_local:
         print(f"  {not_local} match(es) not staged (original not local or export failed); "
               "recorded as pending and retried on every run until staged")

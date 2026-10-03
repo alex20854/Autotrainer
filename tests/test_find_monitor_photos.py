@@ -322,3 +322,22 @@ def test_deferred_backend_imports_resolve():
     pytest.importorskip("osxphotos")
     osxphotos, read_error, strip_photo = fmp._photos_backend()
     assert issubclass(read_error, Exception) and callable(strip_photo) and hasattr(osxphotos, "PhotosDB")
+
+
+
+def test_classify_reports_pending_photos_that_fell_below_threshold(monkeypatch):
+    from datetime import datetime, timezone
+
+    class P:
+        def __init__(self, uuid, lines, intrash=False):
+            self.uuid, self.lines, self.intrash = uuid, lines, intrash
+            self.date, self.path = datetime(2026, 9, 1, 9, 0, tzinfo=timezone.utc), "/x"
+
+    pool = [("SEEN", P("SEEN", PM5_FULL)), ("ALBUM", P("ALBUM", [])), ("HIT", P("HIT", PM5_FULL)),
+            ("OLDPEND", P("OLDPEND", ["3 PM 5 min"])), ("JUNK", P("JUNK", ["lunch?"])), ("TRASH", P("TRASH", PM5_FULL, True))]
+    monkeypatch.setattr(fmp, "ocr_lines", lambda photo, conf: photo.lines)
+    matches, near, dropped, scanned, skipped = fmp.classify(
+        pool, seen={"SEEN"}, in_album={"ALBUM"}, pending_set={"OLDPEND"}, ends=[], cfg=fmp.DEFAULTS)
+    assert [m[0].uuid for m in matches] == ["ALBUM", "HIT"] and matches[0][1] is None
+    assert [d[0].uuid for d in dropped] == ["OLDPEND"]          # reported, not silently gone
+    assert near == [] and scanned == 4 and skipped == 2          # JUNK is simply not a match

@@ -205,13 +205,14 @@ def test_promote_never_overwrites_raw(ws):
 ALLOWED_PHOTO_ATTRS = {"uuid", "date", "path", "path_derivatives", "original_filename",
                        "intrash", "export"}
 ALLOWED_DB_ATTRS = {"photos", "albums"}
-ALLOWED_OSXPHOTOS = {"PhotosDB", "text_detection", "detect_text"}
+ALLOWED_OSXPHOTOS = {"PhotosDB", "PhotosDBReadError", "text_detection", "detect_text", "utils"}
+ALLOWED_UTILS = {"get_last_library_path", "get_system_library_path"}   # read-only lookups
 
 
 def test_only_read_only_photos_api_is_used():
     import ast
     tree = ast.parse(Path(fmp.__file__).read_text())
-    photo_attrs, db_attrs, osx_attrs, imports = set(), set(), set(), set()
+    photo_attrs, db_attrs, osx_attrs, utils_attrs, imports = set(), set(), set(), set(), set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
             owner = node.value.id
@@ -221,11 +222,42 @@ def test_only_read_only_photos_api_is_used():
                 db_attrs.add(node.attr)
             elif owner == "osxphotos":
                 osx_attrs.add(node.attr)
+            elif owner == "utils":
+                utils_attrs.add(node.attr)
         elif isinstance(node, (ast.Import, ast.ImportFrom)):
             mod = getattr(node, "module", None) or ""
             imports |= {mod} | {a.name for a in node.names}
     assert photo_attrs <= ALLOWED_PHOTO_ATTRS, photo_attrs - ALLOWED_PHOTO_ATTRS
     assert db_attrs <= ALLOWED_DB_ATTRS, db_attrs - ALLOWED_DB_ATTRS
     assert osx_attrs <= ALLOWED_OSXPHOTOS, osx_attrs - ALLOWED_OSXPHOTOS
+    assert utils_attrs <= ALLOWED_UTILS, utils_attrs - ALLOWED_UTILS
     # photoscript / PhotoKit are osxphotos' write paths into the library
     assert not any("photoscript" in i or "photokit" in i.lower() for i in imports), imports
+
+
+
+def test_resolve_library_explicit_must_exist_and_wins(tmp_path, monkeypatch):
+    import osxphotos.utils as u
+    boom = lambda: (_ for _ in ()).throw(ValueError("broken plist"))
+    monkeypatch.setattr(u, "get_last_library_path", boom)     # must never even be called
+    monkeypatch.setattr(u, "get_system_library_path", boom)
+    explicit = tmp_path / "Mine.photoslibrary"; explicit.mkdir()
+    assert fmp.resolve_library(str(explicit)) == explicit
+    assert fmp.resolve_library("Mine.photoslibrary", workspace_root=tmp_path) == explicit   # relative -> workspace
+    with pytest.raises(SystemExit, match="not found"):
+        fmp.resolve_library(tmp_path / "typo.photoslibrary")   # never falls back to another library
+
+
+def test_resolve_library_discovery_is_lazy_guarded_and_ordered(tmp_path, monkeypatch):
+    import osxphotos.utils as u
+    system = tmp_path / "System.photoslibrary"; system.mkdir()
+    monkeypatch.setattr(u, "get_last_library_path", lambda: (_ for _ in ()).throw(ValueError("broken plist")))
+    monkeypatch.setattr(u, "get_system_library_path", lambda: str(system))
+    monkeypatch.setattr(fmp, "DEFAULT_LIBRARY", tmp_path / "missing.photoslibrary")
+    assert fmp.resolve_library(None) == system                 # a crashing lookup is skipped, not fatal
+    monkeypatch.setattr(u, "get_system_library_path", lambda: None)
+    monkeypatch.setattr(fmp, "DEFAULT_LIBRARY", system)
+    assert fmp.resolve_library(None) == system                 # default bundle last
+    monkeypatch.setattr(fmp, "DEFAULT_LIBRARY", tmp_path / "missing.photoslibrary")
+    with pytest.raises(SystemExit, match="no Photos library found"):
+        fmp.resolve_library(None)

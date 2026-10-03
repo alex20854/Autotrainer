@@ -38,7 +38,7 @@ power:
 
 # Equipment the athlete actually uses; /coach plan should not prescribe
 # machines that aren't listed here.
-equipment: []     # e.g. concept2-rowerg, concept2-bikeerg, airdyne, treadmill (ids from knowledge/machines.md)
+equipment: []     # e.g. concept2-rowerg, concept2-bikeerg, airdyne, treadmill, elliptical (ids from knowledge/machines.md)
 
 # Activity classification: training sessions vs baseline activity.
 # Baseline-type records (Apple Watch auto-detected walks etc.) go to the
@@ -63,6 +63,7 @@ classification:
 # engine defaults apply; add consoles the OCR vocabulary doesn't know yet.
 photo_finder:
   album: Autotrainer        # photos in this album are always staged
+  library: null             # path to the .photoslibrary, only if Photos' own can't be found
   extra_brands: []          # e.g. [Keiser]
   extra_terms: []
 
@@ -89,3 +90,4 @@ matching:
     versaclimber:      [HKWorkoutActivityTypeClimbing, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther]
     exercise-bike:     [HKWorkoutActivityTypeCycling, Indoor Cycling, Cycling]
     treadmill:         [HKWorkoutActivityTypeRunning, HKWorkoutActivityTypeWalking]
+    elliptical:        [HKWorkoutActivityTypeElliptical, HKWorkoutActivityTypeCrossTraining, HKWorkoutActivityTypeOther, Elliptical, Cross Training, Other]

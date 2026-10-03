@@ -46,3 +46,28 @@ Entry format:
   are the primary output metric. HR 0 means no strap, not zero HR.
 - Known extraction traps: none yet.
 - Example photos: data/raw/photos/8AE94715-*.jpeg
+
+## elliptical
+- Console: Life Fitness touchscreen cardio console (Discover-style; their
+  treadmills and bikes share the layout)
+- Layout: a metrics strip across the top — Calories | Distance | Time Elapsed |
+  Pace | HR — each with a ▾ to switch units; the lower part is the TV/apps
+  area. Level sits bottom-left, Speed (mph) bottom-right. When the athlete
+  stops, a **Pause** dialog overlays the TV area with a countdown and an "End
+  Workout" button; photos are usually taken on this screen, and the strip
+  still shows the finished values.
+- Units/quirks: Distance in **miles** by default (convert to m). Calories are
+  computed from the entered body weight — the strip shows "Enter Weight here
+  for Accurate Calories" when none was set; then leave kcal out of the
+  extraction (note it) so the Watch value stands. HR reads "---" without a
+  chest strap or grip contact. No watts: effort is Level (resistance step) —
+  record it in notes. Time Elapsed stops while paused and is the
+  authoritative duration; the countdown is the seconds left before the
+  console ends the workout by itself, so the photo was taken roughly
+  (timeout − countdown) seconds after the athlete stopped — EXIF time runs
+  slightly later than the true end (matters for photo-only sessions).
+- Known extraction traps: Speed (mph) and Pace are live values and read
+  0.0 / blank on the pause screen — never record them as averages (derive
+  speed from distance ÷ elapsed if needed); the pause countdown is not a
+  metric; the channel list on the right ("24.3 - AMC") is not data.
+- Example photos: data/raw/photos/EEE27E9A-*.heic (pause screen)

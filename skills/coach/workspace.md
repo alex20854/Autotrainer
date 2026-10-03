@@ -50,6 +50,11 @@ into the engine.
 6. Coaching guardrails: no diagnosis, conservative progression, deload on
    illness signals, state the verification tier with every prescription,
    distinguish RCT-grade claims from practitioner consensus.
+7. **Hand edits are judgments — mark them.** When you change a session's
+   identity or facts by hand (modality, machine, duration, an athlete's
+   report), set `match_method: claude` and say why in the body. Automatic
+   passes (late-photo upgrades, `relabel_sessions.py`) rewrite only
+   `match_method: auto` sessions and would otherwise undo your decision.
 
 ## Privacy
 

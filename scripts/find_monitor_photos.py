@@ -44,6 +44,7 @@ import argparse
 import json
 import re
 import shutil
+import sqlite3
 import sys
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -61,6 +62,7 @@ CONFIG_PATH = REPO_ROOT / "config" / "athlete.yaml"
 
 DEFAULTS = {
     "album": "Autotrainer",     # always-stage override album
+    "library": None,            # path to a .photoslibrary; default: Photos' own (see resolve_library)
     "min_score": 4,
     "lookback_days": 30,        # first-run window when there's no state yet
     "ocr_confidence": 0.3,
@@ -251,6 +253,44 @@ def reject(uuids: list[str]) -> int:
 
 # ------------------------------------------------------------------- scanning
 
+DEFAULT_LIBRARY = Path.home() / "Pictures" / "Photos Library.photoslibrary"
+
+
+def _default_bundle() -> Path:
+    return DEFAULT_LIBRARY
+
+
+def resolve_library(explicit: str | Path | None, workspace_root: Path | None = None) -> Path:
+    """The .photoslibrary to read.
+
+    An explicit --library / photo_finder.library value must exist (a relative
+    value resolves against the workspace root): a typo must never silently scan
+    some other library and then advance the scan watermark past the window.
+    Only without one do we try osxphotos' last-opened and system-library
+    lookups, then the default bundle in ~/Pictures — lazily, each guarded, so a
+    broken Photos preferences file cannot block the run (macOS 27 broke the
+    last-opened lookup; the bundle is where Photos keeps the library unless
+    the user moved it)."""
+    if explicit:
+        lib_path = Path(str(explicit)).expanduser()
+        if not lib_path.is_absolute():
+            lib_path = (workspace_root or REPO_ROOT) / lib_path
+        if not lib_path.exists():
+            sys.exit(f"Photos library not found: {lib_path} (from --library / photo_finder.library)")
+        return lib_path
+    from osxphotos import utils
+    for lookup in (utils.get_last_library_path, utils.get_system_library_path, _default_bundle):
+        try:
+            cand = lookup()
+        except Exception as e:  # noqa: BLE001 — a lookup failing must not end the run
+            print(f"  library lookup {lookup.__name__} failed: {e}", file=sys.stderr)
+            continue
+        if cand and Path(cand).expanduser().exists():
+            return Path(cand).expanduser()
+    sys.exit("no Photos library found — pass --library '/path/to/Photos Library.photoslibrary' "
+             "or set photo_finder.library in config/athlete.yaml")
+
+
 def ocr_lines(photo, min_conf: float) -> list[str]:
     from osxphotos.text_detection import detect_text
     path = photo.path or next(iter(photo.path_derivatives or []), None)
@@ -285,14 +325,23 @@ def export_original(photo, dest: Path, download: bool) -> Path | None:
 
 def scan(since: datetime, until: datetime, cfg: dict, *, dry_run: bool, download: bool) -> int:
     import osxphotos
+    from osxphotos.photosdb import PhotosDBReadError
     from privacy_check import strip_photo
 
+    library = resolve_library(cfg.get("library"))
     try:
-        db = osxphotos.PhotosDB()
+        db = osxphotos.PhotosDB(dbfile=str(library))
+    except FileNotFoundError as e:
+        sys.exit(f"{library} has no readable Photos database ({e}); is it the right bundle? "
+                 "Pass --library to point at the library Photos opens.")
+    except (PhotosDBReadError, sqlite3.DatabaseError) as e:
+        sys.exit(f"{library} is not a readable Photos library ({e.__class__.__name__}: {str(e)[:120]}) "
+                 "— an iPhoto library or not a Photos bundle? Pass --library to the one Photos opens.")
     except OSError as e:
-        sys.exit(f"cannot open the Photos library ({e.__class__.__name__}). Grant Full Disk "
-                 "Access to the app running this script (System Settings -> Privacy & Security "
-                 "-> Full Disk Access), restart it, and re-run.")
+        sys.exit(f"cannot open {library} ({e.__class__.__name__}: {str(e)[:120]}). Grant Full "
+                 "Disk Access to the app running this script (System Settings -> Privacy & "
+                 "Security -> Full Disk Access), restart it, and re-run.")
+    print(f"photo finder: library {library}", flush=True)
     state = load_state()
     seen = known_uuids(state)
     album = cfg["album"]
@@ -367,6 +416,7 @@ def main() -> int:
     ap.add_argument("--until", help="YYYY-MM-DD, inclusive (default: now)")
     ap.add_argument("--dry-run", action="store_true", help="list matches; export nothing, keep state")
     ap.add_argument("--no-download", action="store_true", help="skip matches whose original is only in iCloud")
+    ap.add_argument("--library", help="Photos library bundle to read (default: the one Photos opens)")
     ap.add_argument("--promote", nargs="+", metavar="UUID")
     ap.add_argument("--reject", nargs="+", metavar="UUID")
     args = ap.parse_args()
@@ -377,6 +427,8 @@ def main() -> int:
         return reject(args.reject)
 
     cfg = load_config()
+    if args.library:
+        cfg["library"] = args.library
     now = datetime.now().astimezone()
     until = (datetime.fromisoformat(args.until).astimezone() + timedelta(days=1)) if args.until else now
     if args.since:

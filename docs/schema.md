@@ -37,7 +37,7 @@ sources:                              # provenance — which evidence built this
     extraction: data/derived/photos/IMG_4231.yaml
     confidence: high
 match_confidence: 0.95                # 0–1, from the proposal script or Claude
-match_method: auto                    # auto | claude | manual
+match_method: auto                    # auto | claude (Claude decided) | manual (the athlete edited) — automatic passes rewrite only auto
 prescription_id: 2026-W32-2           # null for unprescribed sessions
 compliance:                           # written by Claude during /coach review
   tier: 1                             # 1 | 2 | 3 (spec §8)
@@ -65,7 +65,16 @@ Rules:
 ### Modality vocabulary
 
 `rowerg | skierg | bikeerg | airdyne | stairclimber | versaclimber | bike |
-treadmill-run | treadmill-walk | run | walk | sled | mixed`
+treadmill-run | treadmill-walk | run | walk | sled | elliptical | mixed`
+
+Growing the vocabulary: add the label to `build_index.MODALITIES`, the
+workout types to `apply_merges.TYPE_TO_MODALITY` (and the machine id to
+`MACHINE_TO_MODALITY`), then run `scripts/relabel_sessions.py` in each
+workspace so Health-only sessions that fell through to `mixed` pick up the new
+label. It leaves judged sessions alone, and it refuses to decide for a type the
+athlete's own `matching.modality_map` lists under machines of different
+modalities (e.g. an athlete who logs AirDyne rides as the Watch's "Elliptical"):
+those stay `mixed` until the coach decides by hand.
 
 Add new values here first, then use them.
 

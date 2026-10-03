@@ -77,6 +77,11 @@ detail capture of the same piece.
   must fall in `[start, end + photo_window_after_end_s]` of a workout.
 - Photos usually arrive **after** the Health record has become a session;
   Health-only auto sessions are therefore upgradable in place (schema.md).
+- **macOS 27** broke osxphotos' lookup of the last-opened library (it returns
+  nothing), which surfaced as `FileNotFoundError` on an untouched library.
+  The finder now resolves the library itself (`--library`,
+  `photo_finder.library`, osxphotos' lookups, then the default bundle in
+  `~/Pictures`) and needs osxphotos ≥ 0.77.2.
 - The finder needs **Full Disk Access** for the app running it; originals
   that exist only in iCloud additionally need Photos **automation**
   permission (System Settings → Privacy & Security → Automation), or they

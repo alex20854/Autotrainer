@@ -40,6 +40,7 @@ TYPE_TO_MODALITY = {
     "HKWorkoutActivityTypeHiking": "walk",
     "HKWorkoutActivityTypeStairClimbing": "stairclimber",
     "HKWorkoutActivityTypeStairs": "stairclimber",
+    "HKWorkoutActivityTypeElliptical": "elliptical",
     "HKWorkoutActivityTypeClimbing": "versaclimber",
     "HKWorkoutActivityTypeCrossTraining": "mixed",
     "HKWorkoutActivityTypeHighIntensityIntervalTraining": "mixed",
@@ -56,6 +57,7 @@ TYPE_TO_MODALITY = {
     "Hiking": "walk",
     "Stair Stepper": "stairclimber",
     "Stair Climbing": "stairclimber",
+    "Elliptical": "elliptical",
     "c2-rowerg": "rowerg",
     "c2-rower": "rowerg",
     "c2-skierg": "skierg",
@@ -65,7 +67,7 @@ MACHINE_TO_MODALITY = {
     "concept2-rowerg": "rowerg", "concept2-skierg": "skierg",
     "concept2-bikeerg": "bikeerg", "airdyne": "airdyne",
     "stairclimber": "stairclimber", "versaclimber": "versaclimber",
-    "exercise-bike": "bike", "treadmill": "treadmill-run",
+    "exercise-bike": "bike", "treadmill": "treadmill-run", "elliptical": "elliptical",
 }
 
 
